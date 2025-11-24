@@ -2,22 +2,25 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>REM1</title>
+  <title>purificadora REM</title>
 </head>
 <body>
 
-<h2>Lectura de JSON</h2>
+<h2>Leer JSON del repositorio</h2>
 
-<button onclick="cargarJSON()">Cargar JSON</button>
+<button onclick="leerJSON()">Cargar datos</button>
 
 <div id="output"></div>
 
 <script>
-function cargarJSON() {
-  const url = "https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/refs/heads/main/data/AjustesInventario/AjustesInventario_2025_11.json";
+function leerJSON() {
+  const url = "https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/refs/heads/main/data/AjustesInventario/AjustesInventario_2025_11.json"; // <-- AQUI VA EL RAW DE GITHUB
 
   fetch(url)
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error("No se pudo cargar el archivo");
+      return res.json();
+    })
     .then(data => {
       let html = "<table border='1'><tr>";
 
@@ -25,7 +28,6 @@ function cargarJSON() {
       Object.keys(data[0]).forEach(key => {
         html += <th>${key}</th>;
       });
-
       html += "</tr>";
 
       // Filas
@@ -38,6 +40,7 @@ function cargarJSON() {
       });
 
       html += "</table>";
+
       document.getElementById("output").innerHTML = html;
     })
     .catch(err => {
