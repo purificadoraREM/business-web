@@ -1,136 +1,127 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard POS</title>
 
 <style>
-    body {
-        margin: 0;
-        font-family: "Segoe UI", Tahoma, sans-serif;
-        background: #f2f4f7;
-        display: flex;
-    }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
 
-    /* --- MENU LATERAL --- */
+  body {
+    display: flex;
+    background: #f4f4f7;
+  }
+
+  /* --- SIDEBAR --- */
+  .sidebar {
+    width: 250px;
+    background: #1e1f26;
+    height: 100vh;
+    color: white;
+    padding-top: 20px;
+    position: fixed;
+    transition: all 0.3s ease;
+  }
+
+  .sidebar h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 22px;
+  }
+
+  .menu a {
+    display: block;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #c5c6c7;
+    font-size: 16px;
+    transition: 0.2s;
+  }
+
+  .menu a:hover {
+    background: #34353b;
+    color: white;
+  }
+
+  /* --- CONTENIDO PRINCIPAL --- */
+  .content {
+    margin-left: 250px;
+    padding: 20px;
+    width: 100%;
+    transition: all 0.3s ease;
+  }
+
+  /* --- BOTÓN HAMBURGUESA RESPONSIVE --- */
+  .toggle-btn {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #1e1f26;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000;
+  }
+
+  /* --- RESPONSIVE PARA CELULAR --- */
+  @media (max-width: 768px) {
     .sidebar {
-        width: 260px;
-        height: 100vh;
-        background: #1E1F26;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        padding-top: 20px;
-        position: fixed;
-        left: 0;
-        top: 0;
-        box-shadow: 3px 0 10px rgba(0,0,0,0.2);
+      left: -250px;
     }
 
-    .sidebar h2 {
-        text-align: center;
-        margin-bottom: 30px;
-        color: #00AEEF;
+    .sidebar.active {
+      left: 0;
     }
 
-    .btn-menu {
-        padding: 15px 20px;
-        margin: 5px 15px;
-        background: #2A2B33;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: .2s;
-        font-size: 16px;
+    .toggle-btn {
+      display: block;
     }
 
-    .btn-menu:hover {
-        background: #00AEEF;
-        color: black;
-    }
-
-    /* --- CONTENIDO PRINCIPAL --- */
     .content {
-        margin-left: 260px;
-        padding: 25px;
-        width: 100%;
+      margin-left: 0;
+      padding-top: 60px;
     }
-
-    .card {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
-
-    .title {
-        font-size: 22px;
-        margin-bottom: 10px;
-        color: #333;
-    }
+  }
 </style>
-</head>
 
+</head>
 <body>
 
-    <!-- MENU LATERAL -->
-    <div class="sidebar">
-        <h2>Purificadora REM</h2>
+<!-- BOTÓN PARA ABRIR/CERRAR MENÚ EN TELÉFONO -->
+<div class="toggle-btn" onclick="toggleMenu()">☰</div>
 
-        <div class="btn-menu" onclick="loadSection('Dashboard')">Dashboard</div>
-        <div class="btn-menu" onclick="loadSection('Ventas')">Ventas</div>
-        <div class="btn-menu" onclick="loadSection('Asistencias')">Asistencias</div>
-        <div class="btn-menu" onclick="loadSection('cortes')">Cortes de Venta</div>
-        <div class="btn-menu" onclick="loadSection('Stock')">Stock de material</div>
-        <div class="btn-menu" onclick="loadSection('productorelacionado')">Productos</div>
-        <div class="btn-menu" onclick="loadSection('clientes')">Clientes</div>
-    </div>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <h2>Mi Negocio</h2>
+  <div class="menu">
+    <a href="#">Asistencias</a>
+    <a href="#">Empleados</a>
+    <a href="#">Stock</a>
+    <a href="#">Cortes de Venta</a>
+    <a href="#">Movimientos</a>
+    <a href="#">Productos</a>
+    <a href="#">Clientes</a>
+  </div>
+</div>
 
-    <!-- CONTENIDO CENTRAL -->
-    <div class="content">
-        <div id="view" class="card">
-            <h1 class="title">Bienvenido</h1>
-            <p>Selecciona una opción del menú.</p>
-        </div>
-    </div>
+<!-- CONTENIDO -->
+<div class="content">
+  <h1>Bienvenido</h1>
+  <p>Aquí irá tu dashboard, gráficas, tablas, botones, etc.</p>
+</div>
 
 <script>
-    function loadSection(section) {
-        let html = "";
-
-        switch(section) {
-            case "Dashboard":
-                html = "<h1 class='title'>Dashboard</h1><p>mostrar dashboard.</p>";
-                break;
-
-            case "Ventas":
-                html = "<h1 class='title'>Ventas</h1><p>Ventas.</p>";
-                break;
-
-            case "Asistencias":
-                html = "<h1 class='title'>Asistencias</h1><p>historial de asistencias.</p>";
-                break;
-
-            case "cortes":
-                html = "<h1 class='title'>Cortes de Venta</h1><p>Historial de cortes.</p>";
-                break;
-
-            case "Stock":
-                html = "<h1 class='title'>Stock</h1><p>Stock de consumibles.</p>";
-                break;
-
-            case "productorelacionado":
-                html = "<h1 class='title'>Productorelacionado</h1><p>Productos registrados.</p>";
-                break;
-
-            case "clientes":
-                html = "<h1 class='title'>Clientes</h1><p>Listado de clientes.</p>";
-                break;
-        }
-
-        document.getElementById("view").innerHTML = html;
-    }
+function toggleMenu() {
+  document.getElementById("sidebar").classList.toggle("active");
+}
 </script>
 
 </body>
