@@ -4,7 +4,24 @@
     <title>Purificadora REM</title>
 </head>
 <body>
-    <h1>¡ya cree la pagina web!</h1>
-    <p>solo falta meterle todo para que se vea informacion JAJAJAJAJAJA.</p>
+
+<h2>Lectura de JSON desde GitHub</h2>
+<button onclick="cargar()">Cargar datos</button>
+
+<pre id="salida"></pre>
+
+<script>
+function cargar() {
+    fetch("https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/VentaGral/VentaGral_2025_08.json")      
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("salida").textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+            document.getElementById("salida").textContent = "Error: " + err;
+        });
+}
+</script>
+
 </body>
 </html>
