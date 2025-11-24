@@ -14,47 +14,58 @@
   }
 
   body {
-    display: flex;
-    background: #f4f4f7;
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: #f2f4f7;
+        display: flex;
   }
 
   /* --- SIDEBAR --- */
   .sidebar {
-    width: 250px;
-    background: #1e1f26;
+    width: 260px;
+    background: #1E1F26;
     height: 100vh;
     color: white;
+    display: flex;
     padding-top: 20px;
     position: fixed;
     transition: all 0.3s ease;
+    left: 0;
+    top: 0;
+    box-shadow: 3px 0 10px rgba(0,0,0,0.2);
+
   }
 
   .sidebar h2 {
     text-align: center;
-    margin-bottom: 20px;
-    font-size: 22px;
+    margin-bottom: 30px;   
+    color: #00AEEF;
+
   }
 
   .menu a {
-    display: block;
-    padding: 12px 20px;
-    text-decoration: none;
-    color: #c5c6c7;
-    font-size: 16px;
-    transition: 0.2s;
+        padding: 15px 20px;
+        margin: 5px 15px;
+        background: #2A2B33;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: .2s;
+        font-size: 16px;
+
   }
 
   .menu a:hover {
-    background: #34353b;
-    color: white;
+       background: #00AEEF;
+        color: black;
+
   }
 
   /* --- CONTENIDO PRINCIPAL --- */
   .content {
-    margin-left: 250px;
-    padding: 20px;
-    width: 100%;
-    transition: all 0.3s ease;
+   margin-left: 260px;
+        padding: 25px;
+        width: 100%;
+
   }
 
   /* --- BOTÓN HAMBURGUESA RESPONSIVE --- */
