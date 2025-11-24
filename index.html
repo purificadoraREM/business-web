@@ -2,52 +2,10 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>purificadora REM</title>
+  <title>Panel</title>
 </head>
 <body>
-
-<h2>Leer JSON del repositorio</h2>
-
-<button onclick="leerJSON()">Cargar datos</button>
-
-<div id="output"></div>
-
-<script>
-function leerJSON() {
-  const url = "https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/refs/heads/main/data/AjustesInventario/AjustesInventario_2025_11.json"; // <-- AQUI VA EL RAW DE GITHUB
-
-  fetch(url)
-    .then(res => {
-      if (!res.ok) throw new Error("No se pudo cargar el archivo");
-      return res.json();
-    })
-    .then(data => {
-      let html = "<table border='1'><tr>";
-
-      // Encabezados automáticos
-      Object.keys(data[0]).forEach(key => {
-        html += <th>${key}</th>;
-      });
-      html += "</tr>";
-
-      // Filas
-      data.forEach(item => {
-        html += "<tr>";
-        Object.values(item).forEach(v => {
-          html += <td>${v}</td>;
-        });
-        html += "</tr>";
-      });
-
-      html += "</table>";
-
-      document.getElementById("output").innerHTML = html;
-    })
-    .catch(err => {
-      document.getElementById("output").innerHTML = "Error: " + err;
-    });
-}
-</script>
-
+  <h1>Bienvenido al Panel</h1>
+  <p>Aquí pondremos las tablas, gráficas y botones.</p>
 </body>
 </html>
