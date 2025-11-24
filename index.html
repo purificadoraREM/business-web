@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Purificadora REM2</title>
+    <title>Purificadora REM3</title>
 </head>
 <body>
 
@@ -12,7 +12,7 @@
 
 <script>
 function cargar() {
-    fetch(https://purificadoraREM.github.io/mi_negocio_data/data/AjustesInventario/AjustesInventario_2025_11.json ")      
+    fetch("https://purificadoraREM.github.io/mi_negocio_data/data/AjustesInventario/AjustesInventario_2025_11.json")      
         .then(r => r.json())
         .then(data => {
             document.getElementById("salida").textContent = JSON.stringify(data, null, 2);
