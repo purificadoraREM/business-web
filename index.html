@@ -11,6 +11,29 @@
         font-family: "Segoe UI", Tahoma, sans-serif;
         background: #f2f4f7;
         display: flex;
+
+          @media (max-width: 600px) {
+
+        .sidebar {
+            padding-top: 10px;
+        }
+
+        .sidebar h2 {
+            font-size: 22px; /* Más pequeño para que no se encime */
+            margin-bottom: 15px;
+        }
+
+        .btn-menu {
+            font-size: 15px;
+            padding: 12px 15px;
+            margin: 5px 10px;
+        }
+
+        .content {
+            margin-left: 0; /* Evita espacio cuando el menú está oculto */
+        }
+
+    }
     }
 
     /* --- MENU LATERAL --- */
