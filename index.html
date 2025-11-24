@@ -1,11 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Panel</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Business Web</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: #f2f4f7;
+        display: flex;
+    }
+
+    /* --- MENU LATERAL --- */
+    .sidebar {
+        width: 260px;
+        height: 100vh;
+        background: #1E1F26;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        padding-top: 20px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        box-shadow: 3px 0 10px rgba(0,0,0,0.2);
+    }
+
+    .sidebar h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #00AEEF;
+    }
+
+    .btn-menu {
+        padding: 15px 20px;
+        margin: 5px 15px;
+        background: #2A2B33;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: .2s;
+        font-size: 16px;
+    }
+
+    .btn-menu:hover {
+        background: #00AEEF;
+        color: black;
+    }
+
+    /* --- CONTENIDO PRINCIPAL --- */
+    .content {
+        margin-left: 260px;
+        padding: 25px;
+        width: 100%;
+    }
+
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .title {
+        font-size: 22px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+</style>
 </head>
+
 <body>
-  <h1>Bienvenido al Panel</h1>
-  <p>Aquí pondremos las tablas, gráficas y botones.</p>
+
+    <!-- MENU LATERAL -->
+    <div class="sidebar">
+        <h2>Business Web</h2>
+
+        <div class="btn-menu" onclick="loadSection('asistencias')">Asistencias</div>
+        <div class="btn-menu" onclick="loadSection('empleados')">Empleados</div>
+        <div class="btn-menu" onclick="loadSection('stock')">Stock</div>
+        <div class="btn-menu" onclick="loadSection('cortes')">Cortes de Venta</div>
+        <div class="btn-menu" onclick="loadSection('movimientos')">Movimientos</div>
+        <div class="btn-menu" onclick="loadSection('productos')">Productos</div>
+        <div class="btn-menu" onclick="loadSection('clientes')">Clientes</div>
+    </div>
+
+    <!-- CONTENIDO CENTRAL -->
+    <div class="content">
+        <div id="view" class="card">
+            <h1 class="title">Bienvenido</h1>
+            <p>Selecciona una opción del menú.</p>
+        </div>
+    </div>
+
+<script>
+    function loadSection(section) {
+        let html = "";
+
+        switch(section) {
+            case "asistencias":
+                html = "<h1 class='title'>Asistencias</h1><p>Aquí mostraremos las asistencias.</p>";
+                break;
+
+            case "empleados":
+                html = "<h1 class='title'>Empleados</h1><p>Listado de empleados.</p>";
+                break;
+
+            case "stock":
+                html = "<h1 class='title'>Stock</h1><p>Inventario actual.</p>";
+                break;
+
+            case "cortes":
+                html = "<h1 class='title'>Cortes de Venta</h1><p>Historial de cortes.</p>";
+                break;
+
+            case "movimientos":
+                html = "<h1 class='title'>Movimientos</h1><p>Movimientos del inventario.</p>";
+                break;
+
+            case "productos":
+                html = "<h1 class='title'>Productos</h1><p>Gestión de productos.</p>";
+                break;
+
+            case "clientes":
+                html = "<h1 class='title'>Clientes</h1><p>Listado de clientes.</p>";
+                break;
+        }
+
+        document.getElementById("view").innerHTML = html;
+    }
+</script>
+
 </body>
 </html>
