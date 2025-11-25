@@ -3,126 +3,122 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM</title>
+<title>Purificadora REM F</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-    :root {
-        --card-bg: #ffffff;
-        --primary: #00AEEF;
-        --text: #222;
-        --shadow: 0 8px 20px rgba(0,0,0,0.08);
-        --radius: 14px;
-    }
+:root {
+    --card-bg: #ffffff;
+    --primary: #00AEEF;
+    --text: #222;
+    --shadow: 0 8px 20px rgba(0,0,0,0.08);
+    --radius: 14px;
+}
 
-    body {
-        margin: 0;
-        display: flex;
-        background: #f5f7fb;
-        font-family: "Segoe UI", sans-serif;
-    }
+body {
+    margin: 0;
+    display: flex;
+    background: #f5f7fb;
+    font-family: "Segoe UI", sans-serif;
+}
 
-    /* Sidebar */
-    .sidebar {
-        width: 260px;
-        background: #1E1F26;
-        color: #fff;
-        position: fixed;
-        top: 0; left: 0;
-        height: 100vh;
-        padding-top: 25px;
-        box-shadow: 4px 0 20px rgba(0,0,0,0.3);
-    }
-    .sidebar h2 {
-        text-align: center;
-        color: var(--primary);
-        font-size: 22px;
-    }
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    background: #1E1F26;
+    color: #fff;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    padding-top: 25px;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+}
+.sidebar h2 {
+    text-align: center;
+    color: var(--primary);
+    font-size: 22px;
+}
+.btn-menu {
+    margin: 8px 15px;
+    padding: 12px;
+    background: #282A33;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: .2s;
+    font-size: 15px;
+}
+.btn-menu:hover {
+    background: var(--primary);
+    color: #000;
+}
 
-    .btn-menu {
-        margin: 8px 15px;
-        padding: 12px;
-        background: #282A33;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: .2s;
-        font-size: 15px;
-    }
+/* Content */
+.content {
+    margin-left: 260px;
+    padding: 25px;
+    width: calc(100% - 260px);
+}
 
-    .btn-menu:hover {
-        background: var(--primary);
-        color: #000;
-    }
+.card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
 
-    /* Content */
-    .content {
-        margin-left: 260px;
-        padding: 25px;
-        width: calc(100% - 260px);
-    }
+.title {
+    font-size: 26px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
 
-    .card {
-        background: var(--card-bg);
-        padding: 20px;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        margin-bottom: 20px;
-    }
+button.btnAction {
+    padding: 10px 18px;
+    background: var(--primary);
+    border: none;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: .2s;
+    font-weight: bold;
+    margin-right: 10px;
+}
+button.btnAction:hover {
+    background: #0086bd;
+}
 
-    .title {
-        font-size: 26px;
-        margin-bottom: 15px;
-        font-weight: bold;
-    }
+/* Contenedor botones + tarjeta */
+#controlRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+#totalCard {
+    display: inline-block;
+    padding: 12px 20px;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--primary);
+    margin-left: auto;
+}
 
-    button.btnAction {
-        padding: 10px 18px;
-        background: var(--primary);
-        border: none;
-        color: white;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: .2s;
-        font-weight: bold;
-        margin-right: 10px;
-    }
+#chartWrapper {
+    width: 100%;
+    max-width: 700px;
+    height: 380px;
+    margin: auto;
+}
 
-    button.btnAction:hover {
-        background: #0086bd;
-    }
-
-    /* Contenedor botones + tarjeta */
-    #controlRow {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    #totalCard {
-        display: inline-block;
-        padding: 12px 20px;
-        background: #fff;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        font-size: 18px;
-        font-weight: bold;
-        color: var(--primary);
-        margin-left: auto;
-    }
-
-    #chartWrapper {
-        width: 100%;
-        max-width: 700px;
-        height: 380px;
-        margin: auto;
-    }
-
-    input[type="date"] {
-        padding: 7px 10px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-    }
+input[type="date"] {
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
 </style>
 </head>
 
@@ -139,12 +135,10 @@
 </div>
 
 <div class="content">
-
     <div id="view" class="card">
         <h1>Bienvenido</h1>
         <p>Selecciona una opción del menú.</p>
     </div>
-
 </div>
 
 <script>
@@ -157,13 +151,10 @@ function loadSection(section) {
 
     if (section === "Dashboard") {
         view.innerHTML = `
-
-            <h1 class="title">Resumen de Ventas</h1>
+            <h1 class="title">Dashboard de Ventas</h1>
 
             <div class="card">
-
                 <div id="controlRow">
-
                     <button class="btnAction" onclick="cargarHoy()">Hoy</button>
                     <button class="btnAction" onclick="cargarMes()">Este Mes</button>
 
@@ -173,9 +164,7 @@ function loadSection(section) {
                     <button class="btnAction" onclick="cargarPersonalizado()">Personalizado</button>
 
                     <div id="totalCard">$0.00</div>
-
                 </div>
-
             </div>
 
             <div class="card">
@@ -183,7 +172,6 @@ function loadSection(section) {
                     <canvas id="grafica"></canvas>
                 </div>
             </div>
-
         `;
     }
 }
@@ -193,8 +181,7 @@ function loadSection(section) {
 ============================================================ */
 async function cargarVentasPorMes(year, month) {
     const mes = month.toString().padStart(2, "0");
-    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaGral/VentaGral_${year}_${mes}.json`;
-
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/data/main/VentaGral/VentaGral_${year}_${mes}.json`;
     try {
         const res = await fetch(url);
         if (!res.ok) return [];
@@ -214,14 +201,12 @@ async function cargarHoy() {
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     const fecha = hoy.toISOString().split("T")[0];
     const filtrado = datos.filter(v => v.Fecha === fecha);
-
     dibujar(filtrado, "hora");
 }
 
 async function cargarMes() {
     const hoy = new Date();
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
-
     dibujar(datos, "dia");
 }
 
@@ -239,9 +224,13 @@ async function cargarPersonalizado() {
 
     let resultados = [];
 
-    for (let d = new Date(fi.getTime()); d <= ff; d.setDate(d.getDate()+1)) {
+    // Recorrer rango día por día
+    for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime() + 24*60*60*1000)) {
         const datos = await cargarVentasPorMes(d.getFullYear(), d.getMonth()+1);
-        const fecha = d.toISOString().split("T")[0];
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const dd = String(d.getDate()).padStart(2,'0');
+        const fecha = `${yyyy}-${mm}-${dd}`;
         resultados.push(...datos.filter(v => v.Fecha === fecha));
     }
 
@@ -249,14 +238,12 @@ async function cargarPersonalizado() {
     const unDia = fi.getTime() === ff.getTime();
 
     let modo = "";
-
     if (!mismoMes) modo = "mes";
     else if (unDia) modo = "hora";
     else modo = "dia";
 
     dibujar(resultados, modo);
 }
-
 
 /* ============================================================
     FORMATO 12 HORAS
@@ -277,6 +264,7 @@ function dibujar(data, modo) {
 
     let grupos = {};
 
+    /* ------------------- POR HORA ------------------- */
     if (modo === "hora") {
         data.forEach(v => {
             if (!v.Hora) return;
@@ -284,22 +272,30 @@ function dibujar(data, modo) {
             h = formato12(h);
             grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
         });
-    } else if (modo === "dia") {
-    // Crear todas las fechas del rango
-    let dias = [];
-    const fi = new Date(data[0]?.Fecha || new Date());
-    const ff = new Date(data[data.length-1]?.Fecha || new Date());
-
-    for (let d = new Date(fi); d <= ff; d.setDate(d.getDate()+1)) {
-        dias.push(d.toISOString().split("T")[0]);
     }
 
-    dias.forEach(dia => grupos[dia] = 0); // inicializa todos los días en 0
+    /* ------------------- POR DÍA ------------------- */
+    else if (modo === "dia") {
+        if (data.length === 0) return; // nada que mostrar
 
-    data.forEach(v => {
-        grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
-    });
-    } else if (modo === "mes") {
+        // Rellenar todos los días del rango en 0
+        let fi = new Date(data[0].Fecha);
+        let ff = new Date(data[data.length-1].Fecha);
+        for (let d = new Date(fi); d <= ff; d.setDate(d.getDate()+1)) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth()+1).padStart(2,'0');
+            const dd = String(d.getDate()).padStart(2,'0');
+            const fecha = `${yyyy}-${mm}-${dd}`;
+            grupos[fecha] = 0;
+        }
+
+        data.forEach(v => {
+            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
+        });
+    }
+
+    /* ------------------- POR MES ------------------- */
+    else if (modo === "mes") {
         const meses = [
             "Enero","Febrero","Marzo","Abril","Mayo","Junio",
             "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
@@ -314,7 +310,7 @@ function dibujar(data, modo) {
     const labels = Object.keys(grupos);
     const valores = Object.values(grupos);
 
-    // Total
+    // Total en tarjeta
     const total = valores.reduce((a,b)=>a+b,0);
     document.getElementById("totalCard").innerText = "$" + total.toFixed(2);
 
@@ -337,7 +333,6 @@ function dibujar(data, modo) {
         }
     });
 }
-
 </script>
 
 </body>
