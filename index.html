@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM F</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -276,22 +276,25 @@ function dibujar(data, modo) {
 
     /* ------------------- POR DÍA ------------------- */
     else if (modo === "dia") {
-        if (data.length === 0) return; // nada que mostrar
+    // Obtener fechas desde los inputs
+    const ini = document.getElementById("fechaInicio").value;
+    const fin = document.getElementById("fechaFin").value;
+    let fi = new Date(ini);
+    let ff = new Date(fin);
 
-        // Rellenar todos los días del rango en 0
-        let fi = new Date(data[0].Fecha);
-        let ff = new Date(data[data.length-1].Fecha);
-        for (let d = new Date(fi); d <= ff; d.setDate(d.getDate()+1)) {
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth()+1).padStart(2,'0');
-            const dd = String(d.getDate()).padStart(2,'0');
-            const fecha = `${yyyy}-${mm}-${dd}`;
-            grupos[fecha] = 0;
-        }
+    // Inicializar todos los días en 0
+    for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime() + 24*60*60*1000)) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const dd = String(d.getDate()).padStart(2,'0');
+        const fecha = `${yyyy}-${mm}-${dd}`;
+        grupos[fecha] = 0;
+    }
 
-        data.forEach(v => {
-            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
-        });
+    // Sumar datos reales
+    data.forEach(v => {
+        grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
+    });
     }
 
     /* ------------------- POR MES ------------------- */
