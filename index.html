@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM6</title>
+<title>Purificadora REM</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -215,6 +215,8 @@ async function cargarVentasPorMes(year, month) {
 
 /* ---------------------- FILTROS ---------------------- */
 async function cargarHoy() {
+    if (chart) chart.destroy();
+
     const hoy = new Date();
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth() + 1);
 
@@ -225,8 +227,11 @@ async function cargarHoy() {
 }
 
 async function cargarMes() {
+    if (chart) chart.destroy();
+
     const hoy = new Date();
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth() + 1);
+
     dibujar(datos, "dia");
 }
 
@@ -234,16 +239,22 @@ async function cargarPersonalizado() {
     const ini = document.getElementById("fechaInicio").value;
     const fin = document.getElementById("fechaFin").value;
 
-    if (!ini || !fin) return alert("Selecciona ambas fechas");
+    if (!ini || !fin) {
+        alert("Selecciona ambas fechas");
+        return;
+    }
 
     const fi = new Date(ini);
     const ff = new Date(fin);
 
     let resultados = [];
 
-    for (let d = new Date(fi); d <= ff; d.setDate(d.getDate() + 1)) {
+    // CORRECCIÓN: impedir que "fi" sea modificado
+    for (let d = new Date(fi.getTime()); d <= ff; d.setDate(d.getDate() + 1)) {
         const datos = await cargarVentasPorMes(d.getFullYear(), d.getMonth() + 1);
+
         const fechaActual = d.toISOString().split("T")[0];
+
         resultados.push(...datos.filter(x => x.Fecha === fechaActual));
     }
 
