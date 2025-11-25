@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -245,18 +245,18 @@ async function cargarPersonalizado() {
         resultados.push(...datos.filter(v => v.Fecha === fecha));
     }
 
-    // Comparación correcta
     const mismoMes = fi.getFullYear() === ff.getFullYear() && fi.getMonth() === ff.getMonth();
     const unDia = fi.getTime() === ff.getTime();
 
-    if (!mismoMes) {
-        dibujar(resultados, "mes");
-    } else if (unDia) {
-        dibujar(resultados, "hora");
-    } else {
-        dibujar(resultados, "dia");
-    }
+    let modo = "";
+
+    if (!mismoMes) modo = "mes";
+    else if (unDia) modo = "hora";
+    else modo = "dia";
+
+    dibujar(resultados, modo);
 }
+
 
 /* ============================================================
     FORMATO 12 HORAS
@@ -277,7 +277,6 @@ function dibujar(data, modo) {
 
     let grupos = {};
 
-    /* ------------------- POR HORA ------------------- */
     if (modo === "hora") {
         data.forEach(v => {
             if (!v.Hora) return;
@@ -285,23 +284,15 @@ function dibujar(data, modo) {
             h = formato12(h);
             grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
         });
-    }
-
-    /* ------------------- POR DÍA ------------------- */
-    else if (modo === "dia") {
+    } else if (modo === "dia") {
         data.forEach(v => {
             grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
         });
-    }
-
-    /* ------------------- POR MES ------------------- */
-    else if (modo === "mes") {
-
+    } else if (modo === "mes") {
         const meses = [
             "Enero","Febrero","Marzo","Abril","Mayo","Junio",
             "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
         ];
-
         data.forEach(v => {
             const fecha = new Date(v.Fecha);
             const key = meses[fecha.getMonth()] + " " + fecha.getFullYear();
@@ -312,11 +303,11 @@ function dibujar(data, modo) {
     const labels = Object.keys(grupos);
     const valores = Object.values(grupos);
 
-    /* Total en tarjeta */
+    // Total
     const total = valores.reduce((a,b)=>a+b,0);
     document.getElementById("totalCard").innerText = "$" + total.toFixed(2);
 
-    /* Gráfica */
+    // Gráfica
     chart = new Chart(document.getElementById("grafica"), {
         type: "bar",
         options: {
