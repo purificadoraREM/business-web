@@ -1,185 +1,154 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM</title>
+<title>Dashboard REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
     :root {
-        --color-bg: #f4f6f9;
-        --color-card: #ffffff;
-        --color-primary: #00AEEF;
-        --color-text: #1E1E22;
-        --radius: 18px;
-        --shadow: 0 8px 24px rgba(0,0,0,0.08);
+        --card-bg: #ffffff;
+        --primary: #00AEEF;
+        --text: #222;
+        --shadow: 0 8px 20px rgba(0,0,0,0.08);
+        --radius: 14px;
     }
 
     body {
         margin: 0;
         display: flex;
-        background: var(--color-bg);
-        font-family: 'Segoe UI', sans-serif;
-        overflow-x: hidden;
+        background: #f5f7fb;
+        font-family: "Segoe UI", sans-serif;
     }
 
-    /* SIDEBAR */
+    /* Sidebar */
     .sidebar {
         width: 260px;
-        height: 100vh;
-        background: #1A1B20;
-        color: white;
+        background: #1E1F26;
+        color: #fff;
         position: fixed;
-        left: 0;
-        top: 0;
-        display: flex;
-        flex-direction: column;
+        top: 0; left: 0;
+        height: 100vh;
         padding-top: 25px;
-        box-shadow: 4px 0 18px rgba(0,0,0,0.25);
+        box-shadow: 4px 0 20px rgba(0,0,0,0.3);
     }
-
     .sidebar h2 {
         text-align: center;
+        color: var(--primary);
         font-size: 22px;
-        margin-bottom: 30px;
-        color: var(--color-primary);
-        letter-spacing: 1px;
     }
 
     .btn-menu {
         margin: 8px 15px;
-        padding: 14px 18px;
-        background: #24262F;
-        border-radius: 12px;
+        padding: 12px;
+        background: #282A33;
+        border-radius: 10px;
         cursor: pointer;
-        transition: .25s;
-        font-size: 16px;
+        transition: .2s;
+        font-size: 15px;
     }
 
     .btn-menu:hover {
-        background: var(--color-primary);
+        background: var(--primary);
         color: #000;
-        transform: scale(1.03);
     }
 
-    /* CONTENIDO */
+    /* Content */
     .content {
         margin-left: 260px;
-        padding: 28px;
+        padding: 25px;
         width: calc(100% - 260px);
-        animation: fadeIn .5s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
     }
 
     .card {
-        background: var(--color-card);
+        background: var(--card-bg);
+        padding: 20px;
         border-radius: var(--radius);
-        padding: 25px;
         box-shadow: var(--shadow);
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
 
     .title {
         font-size: 26px;
         margin-bottom: 15px;
         font-weight: bold;
-        color: var(--color-text);
     }
 
-    .btnAction {
-        padding: 12px 20px;
-        margin: 6px;
-        background: var(--color-primary);
-        color: #fff;
+    button.btnAction {
+        padding: 10px 18px;
+        background: var(--primary);
         border: none;
+        color: white;
         border-radius: 10px;
         cursor: pointer;
-        font-size: 16px;
-        font-weight: 600;
-        transition: .25s;
+        transition: .2s;
+        font-weight: bold;
+        margin-right: 10px;
     }
 
-    .btnAction:hover {
+    button.btnAction:hover {
         background: #0086bd;
-        transform: translateY(-2px);
     }
 
-    /* TARJETAS DE ESTADÍSTICAS */
-    .stats {
+    /* Contenedor botones + tarjeta */
+    #controlRow {
         display: flex;
-        gap: 20px;
-        margin-bottom: 25px;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
     }
 
-    .stat-card {
-        flex: 1;
-        background: var(--color-card);
-        padding: 20px;
+    #totalCard {
+        display: inline-block;
+        padding: 12px 20px;
+        background: #fff;
         border-radius: var(--radius);
         box-shadow: var(--shadow);
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        transition: .25s;
-    }
-
-    .stat-card:hover {
-        transform: scale(1.03);
-    }
-
-    .stat-title {
-        font-size: 14px;
-        color: #666;
-    }
-
-    .stat-value {
-        font-size: 24px;
+        font-size: 18px;
         font-weight: bold;
-        color: var(--color-primary);
+        color: var(--primary);
+        margin-left: auto;
     }
 
-    /* GRAFICA */
     #chartWrapper {
         width: 100%;
-        max-width: 620px;
-        height: 330px;
+        max-width: 700px;
+        height: 380px;
         margin: auto;
     }
-
 </style>
-
 </head>
+
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
     <h2>REM Dashboard</h2>
-
     <div class="btn-menu" onclick="loadSection('Dashboard')">Dashboard</div>
     <div class="btn-menu">Empleados</div>
     <div class="btn-menu">Productos</div>
     <div class="btn-menu">Cortes</div>
     <div class="btn-menu">Inventario</div>
     <div class="btn-menu">Clientes</div>
-    <div class="btn-menu">Inmobiliario</div>
 </div>
 
-<!-- CONTENIDO -->
+
 <div class="content">
+
     <div id="view" class="card">
-        <h1 class="title">Bienvenido</h1>
+        <h1>Bienvenido</h1>
         <p>Selecciona una opción del menú.</p>
     </div>
+
 </div>
+
 
 <script>
 
-/* =============== SECCIÓN DASHBOARD =============== */
+/* ============================================================
+    CARGAR SECCIÓN
+============================================================ */
 function loadSection(section) {
     const view = document.getElementById("view");
 
@@ -188,77 +157,68 @@ function loadSection(section) {
 
             <h1 class="title">Dashboard de Ventas</h1>
 
-            <!-- Tarjetas -->
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-title">Ventas de Hoy</div>
-                    <div id="statHoy" class="stat-value">$0.00</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-title">Ventas del Mes</div>
-                    <div id="statMes" class="stat-value">$0.00</div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-title">Rango Seleccionado</div>
-                    <div id="statRango" class="stat-value">$0.00</div>
-                </div>
-            </div>
-
-            <!-- Fecha y botones -->
             <div class="card">
-                <label>Fecha Inicio</label>
-                <input type="date" id="fechaInicio">
 
-                <label style="margin-left:15px;">Fecha Fin</label>
-                <input type="date" id="fechaFin">
+                <div id="controlRow">
 
-                <div style="margin-top:10px;">
                     <button class="btnAction" onclick="cargarHoy()">Hoy</button>
                     <button class="btnAction" onclick="cargarMes()">Este Mes</button>
+
+                    <input type="date" id="fechaInicio">
+                    <input type="date" id="fechaFin">
+
                     <button class="btnAction" onclick="cargarPersonalizado()">Personalizado</button>
+
+                    <div id="totalCard">$0.00</div>
+
                 </div>
+
             </div>
 
-            <!-- Gráfica -->
             <div class="card">
                 <div id="chartWrapper">
                     <canvas id="grafica"></canvas>
                 </div>
             </div>
+
         `;
     }
 }
 
-/* =============== CARGA DE JSON DESDE GITHUB =============== */
+/* ============================================================
+    CARGA DE JSON
+============================================================ */
 async function cargarVentasPorMes(year, month) {
     const mes = month.toString().padStart(2, "0");
-    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaGral/VentaGral_${year}_${mes}.json`;
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/VentaGral/VentaGral_${year}_${mes}.json`;
 
     try {
         const res = await fetch(url);
         if (!res.ok) return [];
         return await res.json();
-    } catch (error) {
+    } catch {
         return [];
     }
 }
 
-/* =============== BOTONES: HOY, MES, RANGO =============== */
+/* ============================================================
+    BOTONES
+============================================================ */
 let chart = null;
 
 async function cargarHoy() {
     const hoy = new Date();
-    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth() + 1);
-    const f = hoy.toISOString().split("T")[0];
-    const filtrados = datos.filter(v => v.Fecha === f);
-    dibujar(filtrados, "hora");
+    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
+    const fecha = hoy.toISOString().split("T")[0];
+    const filtrado = datos.filter(v => v.Fecha === fecha);
+
+    dibujar(filtrado, "hora");
 }
 
 async function cargarMes() {
     const hoy = new Date();
-    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth() + 1);
+    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
+
     dibujar(datos, "dia");
 }
 
@@ -270,73 +230,101 @@ async function cargarPersonalizado() {
 
     const fi = new Date(ini);
     const ff = new Date(fin);
+
     let resultados = [];
 
-    for (let d = new Date(fi.getTime()); d <= ff; d.setDate(d.getDate() + 1)) {
-        const datos = await cargarVentasPorMes(d.getFullYear(), d.getMonth() + 1);
-        const fechaActual = d.toISOString().split("T")[0];
-        resultados.push(...datos.filter(x => x.Fecha === fechaActual));
+    for (let d = new Date(fi.getTime()); d <= ff; d.setDate(d.getDate()+1)) {
+        const datos = await cargarVentasPorMes(d.getFullYear(), d.getMonth()+1);
+        const fecha = d.toISOString().split("T")[0];
+        resultados.push(...datos.filter(v => v.Fecha === fecha));
     }
 
-    dibujar(resultados, "dia");
+    const mesesDiferentes = (ff.getFullYear() - fi.getFullYear()) * 12 +
+                            (ff.getMonth() - fi.getMonth());
+
+    if (mesesDiferentes >= 1) {
+        dibujar(resultados, "mes");
+    }
+    else if (ini === fin) {
+        dibujar(resultados, "hora");
+    }
+    else {
+        dibujar(resultados, "dia");
+    }
 }
 
-/* =============== GRÁFICA Y TARJETAS =============== */
+/* ============================================================
+    FORMATO 12 HORAS
+============================================================ */
+function formato12(hora24) {
+    let h = parseInt(hora24);
+    const suf = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${h} ${suf}`;
+}
+
+/* ============================================================
+    GRÁFICA
+============================================================ */
 function dibujar(data, modo) {
 
     if (chart) chart.destroy();
 
     let grupos = {};
 
+    /* ------------------- POR HORA ------------------- */
     if (modo === "hora") {
         data.forEach(v => {
-            const h = v.Hora?.substring(0,2);
+            if (!v.Hora) return;
+            let h = v.Hora.substring(0,2);
+            h = formato12(h);
             grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
         });
     }
+
+    /* ------------------- POR DÍA ------------------- */
     else if (modo === "dia") {
         data.forEach(v => {
             grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
         });
     }
 
+    /* ------------------- POR MES ------------------- */
+    else if (modo === "mes") {
+
+        const meses = [
+            "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+            "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+        ];
+
+        data.forEach(v => {
+            const fecha = new Date(v.Fecha);
+            const key = meses[fecha.getMonth()] + " " + fecha.getFullYear();
+            grupos[key] = (grupos[key] || 0) + Number(v.Total || 0);
+        });
+    }
+
     const labels = Object.keys(grupos);
     const valores = Object.values(grupos);
 
-    /* ESTADÍSTICAS */
+    /* Total en tarjeta */
     const total = valores.reduce((a,b)=>a+b,0);
+    document.getElementById("totalCard").innerText = "$" + total.toFixed(2);
 
-    if (modo === "hora") document.getElementById("statHoy").innerText = "$" + total.toFixed(2);
-    if (modo === "dia") document.getElementById("statMes").innerText = "$" + total.toFixed(2);
-
-    document.getElementById("statRango").innerText = "$" + total.toFixed(2);
-
-    /* GRÁFICA */
+    /* Gráfica */
     chart = new Chart(document.getElementById("grafica"), {
         type: "bar",
         options: {
-            plugins: {
-                legend: { display: false }
-            },
-            animation: {
-                duration: 900,
-                easing: "easeOutQuart"
-            },
-            scales: {
-                x: {
-                    ticks: { color: "#333" }
-                },
-                y: {
-                    ticks: { color: "#333" }
-                }
-            },
-            maintainAspectRatio: false
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            animation: { duration: 900 }
         },
         data: {
             labels,
             datasets: [{
                 data: valores,
-                backgroundColor: "rgba(0,174,239,0.7)",
+                backgroundColor: "rgba(0,174,239,0.75)",
                 borderRadius: 12
             }]
         }
@@ -347,4 +335,3 @@ function dibujar(data, modo) {
 
 </body>
 </html>
-
