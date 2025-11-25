@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM1</title>
+<title>Dashboard REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -125,7 +125,7 @@ input[type="date"] {
 <body>
 
 <div class="sidebar">
-    <h2>Purificadora REM</h2>
+    <h2>REM Dashboard</h2>
     <div class="btn-menu" onclick="loadSection('Dashboard')">Dashboard</div>
     <div class="btn-menu">Empleados</div>
     <div class="btn-menu">Productos</div>
@@ -142,6 +142,7 @@ input[type="date"] {
 </div>
 
 <script>
+let chart = null;
 
 /* ============================================================
     CARGAR SECCIÓN
@@ -184,10 +185,9 @@ async function cargarVentasPorMes(year, month) {
     const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaGral/VentaGral_${year}_${mes}.json`;
     try {
         const res = await fetch(url);
-        if (!res.ok) return []; // Si no existe el archivo, devuelve vacío
+        if (!res.ok) return []; 
         return await res.json();
-    } catch (err) {
-        console.error("Error al cargar JSON:", err);
+    } catch {
         return [];
     }
 }
@@ -195,24 +195,28 @@ async function cargarVentasPorMes(year, month) {
 /* ============================================================
     BOTONES
 ============================================================ */
-let chart = null;
-
 async function cargarHoy() {
+    document.getElementById("fechaInicio").value = "";
+    document.getElementById("fechaFin").value = "";
     const hoy = new Date();
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     const fecha = hoy.toISOString().split("T")[0];
     const filtrado = datos.filter(v => v.Fecha === fecha);
-    dibujar(filtrado, "hora");
+    dibujar(filtrado, "hora", hoy, hoy);
 }
 
 async function cargarMes() {
+    document.getElementById("fechaInicio").value = "";
+    document.getElementById("fechaFin").value = "";
     const hoy = new Date();
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
-    dibujar(datos, "dia");
+    const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
+    dibujar(datos, "dia", primerDia, ultimoDia);
 }
 
 /* ============================================================
-    PERSONALIZADO CORREGIDO
+    PERSONALIZADO
 ============================================================ */
 async function cargarPersonalizado() {
     const ini = document.getElementById("fechaInicio").value;
@@ -223,20 +227,18 @@ async function cargarPersonalizado() {
     const ff = new Date(fin);
     let resultados = [];
 
-    // Recorre día por día
     for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime()+24*60*60*1000)) {
         const yyyy = d.getFullYear();
         const mm = d.getMonth()+1;
         const dd = String(d.getDate()).padStart(2,'0');
         const fechaStr = `${yyyy}-${String(mm).padStart(2,'0')}-${dd}`;
-
         const datosMes = await cargarVentasPorMes(yyyy, mm);
         resultados.push(...datosMes.filter(v => v.Fecha === fechaStr));
     }
 
-    const mismoMes = fi.getFullYear() === ff.getFullYear() && fi.getMonth() === ff.getMonth();
     const unDia = fi.getTime() === ff.getTime();
-    let modo = (!mismoMes) ? "mes" : (unDia ? "hora" : "dia");
+    const variosMeses = fi.getMonth() !== ff.getMonth() || fi.getFullYear() !== ff.getFullYear();
+    let modo = (unDia ? "hora" : (variosMeses ? "mes" : "dia"));
 
     dibujar(resultados, modo, fi, ff);
 }
@@ -254,13 +256,10 @@ function formato12(hora24) {
 /* ============================================================
     GRÁFICA
 ============================================================ */
-function dibujar(data, modo) {
-
+function dibujar(data, modo, fi = null, ff = null) {
     if (chart) chart.destroy();
-
     let grupos = {};
 
-    /* ------------------- POR HORA ------------------- */
     if (modo === "hora") {
         data.forEach(v => {
             if (!v.Hora) return;
@@ -268,68 +267,38 @@ function dibujar(data, modo) {
             h = formato12(h);
             grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
         });
-    }
-
-    /* ------------------- POR DÍA ------------------- */
-    else if (modo === "dia") {
-    // Obtener fechas desde los inputs
-    const ini = document.getElementById("fechaInicio").value;
-    const fin = document.getElementById("fechaFin").value;
-    let fi = new Date(ini);
-    let ff = new Date(fin);
-
-    // Inicializar todos los días en 0
-    for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime() + 24*60*60*1000)) {
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth()+1).padStart(2,'0');
-        const dd = String(d.getDate()).padStart(2,'0');
-        const fecha = `${yyyy}-${mm}-${dd}`;
-        grupos[fecha] = 0;
-    }
-
-    // Sumar datos reales
-    data.forEach(v => {
-        grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
-    });
-    }
-
-    /* ------------------- POR MES ------------------- */
-    else if (modo === "mes") {
-        const meses = [
-            "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-            "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-        ];
+    } else if (modo === "dia") {
+        // Rellenar todos los días en 0
+        for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime()+24*60*60*1000)) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth()+1).padStart(2,'0');
+            const dd = String(d.getDate()).padStart(2,'0');
+            grupos[`${yyyy}-${mm}-${dd}`] = 0;
+        }
         data.forEach(v => {
-            const fecha = new Date(v.Fecha);
-            const key = meses[fecha.getMonth()] + " " + fecha.getFullYear();
-            grupos[key] = (grupos[key] || 0) + Number(v.Total || 0);
+            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
+        });
+    } else if (modo === "mes") {
+        const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                       "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        data.forEach(v => {
+            const f = new Date(v.Fecha);
+            if (f >= fi && f <= ff) {
+                const key = meses[f.getMonth()] + " " + f.getFullYear();
+                grupos[key] = (grupos[key] || 0) + Number(v.Total || 0);
+            }
         });
     }
 
     const labels = Object.keys(grupos);
     const valores = Object.values(grupos);
-
-    // Total en tarjeta
     const total = valores.reduce((a,b)=>a+b,0);
-    document.getElementById("totalCard").innerText = "$" + total.toFixed(2);
+    document.getElementById("totalCard").innerText = "$"+total.toFixed(2);
 
-    // Gráfica
     chart = new Chart(document.getElementById("grafica"), {
         type: "bar",
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            animation: { duration: 900 }
-        },
-        data: {
-            labels,
-            datasets: [{
-                data: valores,
-                backgroundColor: "rgba(0,174,239,0.75)",
-                borderRadius: 12
-            }]
-        }
+        data: { labels, datasets:[{ data: valores, backgroundColor: "rgba(0,174,239,0.75)", borderRadius: 12 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
     });
 }
 </script>
