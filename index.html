@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard REM</title>
+<title> REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -198,9 +198,9 @@ async function cargarHoy() {
     document.getElementById("fechaInicio").value = "";
     document.getElementById("fechaFin").value = "";
     const hoy = new Date();
+    const hoyStr = fechaToString(hoy);
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
-    const fechaStr = fechaToString(hoy);
-    const filtrado = datos.filter(v => v.Fecha === fechaStr);
+    const filtrado = datos.filter(v => v.Fecha === hoyStr);
     dibujar(filtrado, "hora", hoy, hoy);
 }
 
@@ -222,12 +222,13 @@ async function cargarPersonalizado() {
     const fin = document.getElementById("fechaFin").value;
     if (!ini || !fin) return alert("Selecciona ambas fechas");
 
-    let fi = new Date(ini);
-    let ff = new Date(fin);
-    let fiStr = ini;
-    let ffStr = fin;
+    const fi = new Date(ini);
+    const ff = new Date(fin);
 
-    // Determinar todos los meses involucrados
+    const fiStr = ini;
+    const ffStr = fin;
+
+    // Todos los meses involucrados
     let meses = [];
     for (let d = new Date(fi.getFullYear(), fi.getMonth(), 1); d <= ff; d.setMonth(d.getMonth()+1)) {
         meses.push({ year: d.getFullYear(), month: d.getMonth()+1 });
@@ -236,7 +237,6 @@ async function cargarPersonalizado() {
     let resultados = [];
     for (let m of meses) {
         const datosMes = await cargarVentasPorMes(m.year, m.month);
-        // Filtrar solo fechas dentro del rango exacto como string
         resultados.push(...datosMes.filter(v => v.Fecha >= fiStr && v.Fecha <= ffStr));
     }
 
@@ -279,7 +279,6 @@ function dibujar(data, modo, fi = null, ff = null) {
             grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
         });
     } else if (modo === "dia") {
-        // Rellenar todos los días en 0
         for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime()+24*60*60*1000)) {
             const key = fechaToString(d);
             grupos[key] = 0;
