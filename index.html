@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 :root {
     --card-bg: #ffffff;
@@ -185,7 +184,7 @@ async function cargarVentasPorMes(year, month) {
     const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaGral/VentaGral_${year}_${mes}.json`;
     try {
         const res = await fetch(url);
-        if (!res.ok) return []; 
+        if (!res.ok) return [];
         return await res.json();
     } catch {
         return [];
@@ -200,8 +199,8 @@ async function cargarHoy() {
     document.getElementById("fechaFin").value = "";
     const hoy = new Date();
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
-    const fecha = hoy.toISOString().split("T")[0];
-    const filtrado = datos.filter(v => v.Fecha === fecha);
+    const fechaStr = fechaToString(hoy);
+    const filtrado = datos.filter(v => v.Fecha === fechaStr);
     dibujar(filtrado, "hora", hoy, hoy);
 }
 
@@ -225,32 +224,28 @@ async function cargarPersonalizado() {
 
     let fi = new Date(ini);
     let ff = new Date(fin);
+    let fiStr = ini;
+    let ffStr = fin;
 
     // Determinar todos los meses involucrados
     let meses = [];
-    for (let d = new Date(fi.getFullYear(), fi.getMonth(), 1); 
-         d <= ff; 
-         d.setMonth(d.getMonth()+1)) {
+    for (let d = new Date(fi.getFullYear(), fi.getMonth(), 1); d <= ff; d.setMonth(d.getMonth()+1)) {
         meses.push({ year: d.getFullYear(), month: d.getMonth()+1 });
     }
 
     let resultados = [];
     for (let m of meses) {
         const datosMes = await cargarVentasPorMes(m.year, m.month);
-        // Filtrar solo las fechas dentro del rango exacto
-        resultados.push(...datosMes.filter(v => {
-            const f = new Date(v.Fecha);
-            return f >= fi && f <= ff;
-        }));
+        // Filtrar solo fechas dentro del rango exacto como string
+        resultados.push(...datosMes.filter(v => v.Fecha >= fiStr && v.Fecha <= ffStr));
     }
 
-    const unDia = fi.getTime() === ff.getTime();
+    const unDia = fiStr === ffStr;
     const variosMeses = fi.getMonth() !== ff.getMonth() || fi.getFullYear() !== ff.getFullYear();
     let modo = (unDia ? "hora" : (variosMeses ? "mes" : "dia"));
 
     dibujar(resultados, modo, fi, ff);
 }
-
 
 /* ============================================================
     FORMATO 12 HORAS
@@ -260,6 +255,13 @@ function formato12(hora24) {
     const suf = h >= 12 ? "PM" : "AM";
     h = h % 12 || 12;
     return `${h} ${suf}`;
+}
+
+function fechaToString(fecha) {
+    const yyyy = fecha.getFullYear();
+    const mm = String(fecha.getMonth()+1).padStart(2,'0');
+    const dd = String(fecha.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
 }
 
 /* ============================================================
@@ -279,21 +281,19 @@ function dibujar(data, modo, fi = null, ff = null) {
     } else if (modo === "dia") {
         // Rellenar todos los días en 0
         for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime()+24*60*60*1000)) {
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth()+1).padStart(2,'0');
-            const dd = String(d.getDate()).padStart(2,'0');
-            grupos[`${yyyy}-${mm}-${dd}`] = 0;
+            const key = fechaToString(d);
+            grupos[key] = 0;
         }
         data.forEach(v => {
             grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
         });
     } else if (modo === "mes") {
-        const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                       "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        const mesesN = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                        "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
         data.forEach(v => {
             const f = new Date(v.Fecha);
             if (f >= fi && f <= ff) {
-                const key = meses[f.getMonth()] + " " + f.getFullYear();
+                const key = mesesN[f.getMonth()] + " " + f.getFullYear();
                 grupos[key] = (grupos[key] || 0) + Number(v.Total || 0);
             }
         });
@@ -311,6 +311,5 @@ function dibujar(data, modo, fi = null, ff = null) {
     });
 }
 </script>
-
 </body>
 </html>
