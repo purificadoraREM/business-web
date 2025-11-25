@@ -222,36 +222,32 @@ async function cargarPersonalizado() {
     const fin = document.getElementById("fechaFin").value;
     if (!ini || !fin) return alert("Selecciona ambas fechas");
 
-    // Convertimos a strings directamente (no usar new Date)
-    const fiStr = ini;
-    const ffStr = fin;
+    const [startY, startM] = ini.split("-").map(Number);
+    const [endY, endM] = fin.split("-").map(Number);
 
-    // Lista de meses que hay que cargar
-    const meses = [];
-    const start = fiStr.split("-"); // [YYYY,MM,DD]
-    const end = ffStr.split("-"); 
-    let y = parseInt(start[0]), m = parseInt(start[1]);
-
-    while (y < parseInt(end[0]) || (y === parseInt(end[0]) && m <= parseInt(end[1]))) {
-        meses.push({year:y, month:m});
+    // Generar lista de meses a cargar
+    let meses = [];
+    let y = startY, m = startM;
+    while (y < endY || (y === endY && m <= endM)) {
+        meses.push({year: y, month: m});
         m++;
-        if (m>12) { m=1; y++; }
+        if (m > 12) { m = 1; y++; }
     }
 
     let resultados = [];
     for (let mes of meses) {
         const datosMes = await cargarVentasPorMes(mes.year, mes.month);
-        // Filtramos solo por string
-        resultados.push(...datosMes.filter(v => v.Fecha >= fiStr && v.Fecha <= ffStr));
+        resultados.push(...datosMes.filter(v => v.Fecha >= ini && v.Fecha <= fin));
     }
 
     // Determinar modo de gráfico
-    const unDia = fiStr === ffStr;
-    const variosMeses = meses.length>1;
+    const unDia = ini === fin;
+    const variosMeses = meses.length > 1;
     let modo = unDia ? "hora" : (variosMeses ? "mes" : "dia");
 
-    dibujar(resultados, modo, fiStr, ffStr);
+    dibujar(resultados, modo, ini, fin);
 }
+
 
 /* ============================================================
     FORMATO 12 HORAS
