@@ -5,39 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Purificadora REM</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
     body {
         margin: 0;
         font-family: "Segoe UI", Tahoma, sans-serif;
         background: #f2f4f7;
         display: flex;
-
-          @media (max-width: 600px) {
-
-        .sidebar {
-             padding-top: 60px;
-
-        }
-
-        .sidebar h2 {
-            font-size: 22px; /* Más pequeño para que no se encime */
-            margin-bottom: 20px;
-        }
-
-        .btn-menu {
-            font-size: 15px;
-            padding: 14px 18px;
-            margin: 8px 15px;
-        }
-
-        .content {
-            margin-left: 0; 
-        }
-
-    }
     }
 
-    /* --- MENU LATERAL --- */
+    /* =========== SIDEBAR =========== */
     .sidebar {
         width: 260px;
         height: 100vh;
@@ -50,7 +28,7 @@
         left: 0;
         top: 0;
         box-shadow: 3px 0 10px rgba(0,0,0,0.2);
-        transition: transform 0.3s ease;
+        transition: transform .3s ease;
     }
 
     .sidebar h2 {
@@ -74,7 +52,7 @@
         color: black;
     }
 
-    /* --- BOTÓN (solo móvil) --- */
+    /* Botón hamburguesa (solo móvil) */
     .menu-toggle {
         display: none;
         position: fixed;
@@ -89,7 +67,7 @@
         z-index: 1000;
     }
 
-    /* --- CONTENIDO PRINCIPAL --- */
+    /* =========== CONTENIDO =========== */
     .content {
         margin-left: 260px;
         padding: 25px;
@@ -111,36 +89,33 @@
         color: #333;
     }
 
-    /* --- RESPONSIVE --- */
+    /* ===== RESPONSIVE ===== */
     @media(max-width: 768px) {
         .sidebar {
             transform: translateX(-100%);
         }
-
         .sidebar.show {
             transform: translateX(0);
         }
-
         .menu-toggle {
             display: block;
         }
-
         .content {
             margin-left: 0;
-            padding-top: 60px; 
+            padding-top: 60px;
         }
     }
+
 </style>
 </head>
-
 <body>
 
 <!-- Botón hamburguesa -->
 <div class="menu-toggle" onclick="toggleMenu()">☰</div>
 
-<!-- MENU LATERAL -->
+<!-- MENU -->
 <div class="sidebar" id="sidebar">
-    <h2>   Purificadora REM</h2>
+    <h2>Purificadora REM</h2>
 
     <div class="btn-menu" onclick="loadSection('Dashboard')">Dashboard</div>
     <div class="btn-menu" onclick="loadSection('Empleados')">Empleados</div>
@@ -151,7 +126,7 @@
     <div class="btn-menu" onclick="loadSection('Inmobiliario')">Inmobiliario</div>
 </div>
 
-<!-- CONTENIDO CENTRAL -->
+<!-- CONTENIDO -->
 <div class="content">
     <div id="view" class="card">
         <h1 class="title">Bienvenido</h1>
@@ -160,43 +135,159 @@
 </div>
 
 <script>
-    function loadSection(section) {
-        const sidebar = document.getElementById("sidebar");
-        sidebar.classList.remove("show"); // cerrar en móvil
 
-        let html = "";
+function toggleMenu() {
+    document.getElementById("sidebar").classList.toggle("show");
+}
 
-        switch(section) {
-            case "Dashboard":
-                html = "<h1 class='title'>Asistencias</h1><p>Aquí mostraremos las asistencias.</p>";
-                break;
-            case "Empleados":
-                html = "<h1 class='title'>Empleados</h1><p>informacion de empleados.</p>";
-                break;
-            case "Productos":
-                html = "<h1 class='title'>Stock</h1><p>informacion de Productos.</p>";
-                break;
-            case "cortes":
-                html = "<h1 class='title'>Cortes de Venta</h1><p>Historial de cortes.</p>";
-                break;
-            case "Inventario":
-                html = "<h1 class='title'>Inventario</h1><p>Movimientos del inventario.</p>";
-                break;
-            case "Clientes":
-                html = "<h1 class='title'>Clientes</h1><p>Informacion de clientes.</p>";
-                break;
-            case "Inmobiliario":
-                html = "<h1 class='title'>Inmobiliario</h1><p>Listado de Inmobiliario.</p>";
-                break;
+/* ================================
+   FUNCION PARA CARGAR SECCIONES
+================================ */
+function loadSection(section) {
+    if (section !== "Dashboard") {
+        document.getElementById("view").innerHTML =
+            <h1 class='title'>${section}</h1><p>En construcción...</p>;
+        return;
+    }
+
+    loadDashboard();
+}
+
+/* ================================
+           GITHUB JSON
+================================ */
+
+function getJsonUrl(year, month) {
+    return https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/VentaGral/VentaGral_${year}_${month}.json;
+}
+
+/* ================================
+           DASHBOARD
+================================ */
+
+let chart;
+
+function loadDashboard() {
+    document.getElementById("view").innerHTML = `
+        <h1 class="title">Dashboard</h1>
+
+        <div style="margin-bottom:20px;">
+            <label>Desde:</label>
+            <input type="date" id="desde">
+
+            <label>Hasta:</label>
+            <input type="date" id="hasta">
+
+            <button onclick="loadPersonalizado()">Personalizado</button>
+            <button onclick="loadHoy()">Hoy</button>
+            <button onclick="loadMes()">Este Mes</button>
+        </div>
+
+        <canvas id="grafica" height="120"></canvas>
+    `;
+}
+
+/* ---- Cargar datos desde GitHub ---- */
+async function loadJson(year, month) {
+    const url = getJsonUrl(year, month);
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) return [];
+        return await res.json();
+    } catch {
+        return [];
+    }
+}
+
+/* ---- HOY ---- */
+async function loadHoy() {
+    const hoy = new Date();
+    const y = hoy.getFullYear();
+    const m = String(hoy.getMonth() + 1).padStart(2, "0");
+    const d = String(hoy.getDate()).padStart(2, "0");
+
+    const data = await loadJson(y, m);
+    const ventasHoy = data.filter(x => x.Fecha === ${y}-${m}-${d});
+
+    const agrupado = {};
+
+    ventasHoy.forEach(v => {
+        const hora = v.Hora.substring(0,2) + ":00";
+        agrupado[hora] = (agrupado[hora] || 0) + v.Total;
+    });
+
+    drawChart(Object.keys(agrupado), Object.values(agrupado), "Ventas por Hora (Hoy)");
+}
+
+/* ---- ESTE MES ---- */
+async function loadMes() {
+    const ahora = new Date();
+    const y = ahora.getFullYear();
+    const m = String(ahora.getMonth()+1).padStart(2,"0");
+
+    const data = await loadJson(y,m);
+
+    const agrupado = {};
+
+    data.forEach(v => {
+        const dia = v.Fecha.substring(8,10);
+        agrupado[dia] = (agrupado[dia] || 0) + v.Total;
+    });
+
+    drawChart(Object.keys(agrupado), Object.values(agrupado), "Venta por Día (Mes Actual)");
+}
+
+/* ---- PERSONALIZADO ---- */
+async function loadPersonalizado() {
+    const desde = document.getElementById("desde").value;
+    const hasta = document.getElementById("hasta").value;
+
+    if (!desde || !hasta) {
+        alert("Selecciona un rango de fechas");
+        return;
+    }
+
+    let fi = new Date(desde);
+    let ff = new Date(hasta);
+
+    const resultados = {};
+
+    while (fi <= ff) {
+        const y = fi.getFullYear();
+        const m = String(fi.getMonth()+1).padStart(2,"0");
+        const d = String(fi.getDate()).padStart(2,"0");
+
+        const data = await loadJson(y,m);
+
+        data.filter(x => x.Fecha === ${y}-${m}-${d}).forEach(v => {
+            resultados[d] = (resultados[d] || 0) + v.Total;
+        });
+
+        fi.setDate(fi.getDate()+1);
+    }
+
+    drawChart(Object.keys(resultados), Object.values(resultados), "Personalizado");
+}
+
+/* ---- GRAFICAR ---- */
+function drawChart(labels, values, title) {
+    const ctx = document.getElementById("grafica");
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels,
+            datasets: [{
+                label: title,
+                data: values
+            }]
         }
+    });
+}
 
-        document.getElementById("view").innerHTML = html;
-    }
-
-    function toggleMenu() {
-        const sidebar = document.getElementById("sidebar");
-        sidebar.classList.toggle("show");
-    }
 </script>
 
 </body>
