@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> Purificadora REM3</title>
+<title>Purificadora REM Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -208,9 +208,9 @@ async function cargarMes() {
     document.getElementById("fechaInicio").value = "";
     document.getElementById("fechaFin").value = "";
     const hoy = new Date();
-    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
+    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     dibujar(datos, "dia", primerDia, ultimoDia);
 }
 
@@ -222,21 +222,22 @@ async function cargarPersonalizado() {
     const fin = document.getElementById("fechaFin").value;
     if (!ini || !fin) return alert("Selecciona ambas fechas");
 
-    // Obtener año y mes de inicio y fin
-    const [startY, startM] = ini.split("-").map(Number);
-    const [endY, endM] = fin.split("-").map(Number);
+    // Convertir a Date de forma segura
+    const [y1, m1, d1] = ini.split("-").map(Number);
+    const [y2, m2, d2] = fin.split("-").map(Number);
+    const fi = new Date(y1, m1-1, d1);
+    const ff = new Date(y2, m2-1, d2);
 
-    // Generar lista de meses a cargar (YYYY, MM)
-    const meses = [];
-    let y = startY;
-    let m = startM;
-    while (y < endY || (y === endY && m <= endM)) {
+    // Generar lista de meses a cargar
+    let meses = [];
+    let y = y1, m = m1;
+    while (y < y2 || (y === y2 && m <= m2)) {
         meses.push({ year: y, month: m });
         m++;
-        if (m > 12) { m = 1; y++; }
+        if (m > 12) { m=1; y++; }
     }
 
-    // Cargar todos los meses y filtrar solo las fechas dentro del rango
+    // Cargar todos los meses y filtrar por rango
     let resultados = [];
     for (let mes of meses) {
         const datosMes = await cargarVentasPorMes(mes.year, mes.month);
@@ -244,13 +245,12 @@ async function cargarPersonalizado() {
     }
 
     // Determinar modo de gráfico
-    const unDia = ini === fin;
-    const variosMeses = meses.length > 1;
-    let modo = unDia ? "hora" : (variosMeses ? "mes" : "dia");
+    let modo = "dia";
+    if (fi.getTime() === ff.getTime()) modo = "hora";
+    else if (meses.length > 1) modo = "mes";
 
-    dibujar(resultados, modo, ini, fin);
+    dibujar(resultados, modo, fi, ff);
 }
-
 
 /* ============================================================
     FORMATO 12 HORAS
@@ -284,9 +284,12 @@ function dibujar(data, modo, fi = null, ff = null) {
             grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
         });
     } else if (modo === "dia") {
-        for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime()+24*60*60*1000)) {
-            const key = fechaToString(d);
+        // inicializar todos los días
+        let current = new Date(fi.getTime());
+        while (current <= ff) {
+            const key = fechaToString(current);
             grupos[key] = 0;
+            current.setDate(current.getDate() + 1);
         }
         data.forEach(v => {
             grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
