@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> REM</title>
+<title> Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -222,29 +222,35 @@ async function cargarPersonalizado() {
     const fin = document.getElementById("fechaFin").value;
     if (!ini || !fin) return alert("Selecciona ambas fechas");
 
-    const fi = new Date(ini);
-    const ff = new Date(fin);
-
+    // Convertimos a strings directamente (no usar new Date)
     const fiStr = ini;
     const ffStr = fin;
 
-    // Todos los meses involucrados
-    let meses = [];
-    for (let d = new Date(fi.getFullYear(), fi.getMonth(), 1); d <= ff; d.setMonth(d.getMonth()+1)) {
-        meses.push({ year: d.getFullYear(), month: d.getMonth()+1 });
+    // Lista de meses que hay que cargar
+    const meses = [];
+    const start = fiStr.split("-"); // [YYYY,MM,DD]
+    const end = ffStr.split("-"); 
+    let y = parseInt(start[0]), m = parseInt(start[1]);
+
+    while (y < parseInt(end[0]) || (y === parseInt(end[0]) && m <= parseInt(end[1]))) {
+        meses.push({year:y, month:m});
+        m++;
+        if (m>12) { m=1; y++; }
     }
 
     let resultados = [];
-    for (let m of meses) {
-        const datosMes = await cargarVentasPorMes(m.year, m.month);
+    for (let mes of meses) {
+        const datosMes = await cargarVentasPorMes(mes.year, mes.month);
+        // Filtramos solo por string
         resultados.push(...datosMes.filter(v => v.Fecha >= fiStr && v.Fecha <= ffStr));
     }
 
+    // Determinar modo de gráfico
     const unDia = fiStr === ffStr;
-    const variosMeses = fi.getMonth() !== ff.getMonth() || fi.getFullYear() !== ff.getFullYear();
-    let modo = (unDia ? "hora" : (variosMeses ? "mes" : "dia"));
+    const variosMeses = meses.length>1;
+    let modo = unDia ? "hora" : (variosMeses ? "mes" : "dia");
 
-    dibujar(resultados, modo, fi, ff);
+    dibujar(resultados, modo, fiStr, ffStr);
 }
 
 /* ============================================================
