@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM 1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -96,7 +96,10 @@ button.btnAction:hover {
     flex-wrap: wrap;
 }
 #totalCard {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     padding: 12px 20px;
     background: #fff;
     border-radius: var(--radius);
@@ -114,12 +117,25 @@ input[type="date"] {
     border: 1px solid #ccc;
 }
 
-/* Gráfico */
+/* Contenedor de gráficos */
+#chartsContainer {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+#chartWrapper, #pieWrapper {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
 #chartWrapper {
-    width: 100%;
-    max-width: 800px;
+    width: 65%;
     height: 400px;
-    margin: auto;
+}
+#pieWrapper {
+    width: 35%;
+    height: 400px;
 }
 </style>
 </head>
@@ -143,7 +159,8 @@ input[type="date"] {
 </div>
 
 <script>
-let chart = null;
+let barChart = null;
+let pieChart = null;
 
 /* ============================================================
     CARGAR SECCIÓN
@@ -165,17 +182,43 @@ function loadSection(section) {
 
                     <button class="btnAction" onclick="cargarPersonalizado()">Personalizado</button>
 
-                    <div id="totalCard">$0.00</div>
+                    <div id="totalCard">
+                        <span>Total Ventas</span>
+                        <span id="totalValor">$0.00</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
+            <div id="chartsContainer">
                 <div id="chartWrapper">
                     <canvas id="grafica"></canvas>
+                </div>
+                <div id="pieWrapper">
+                    <canvas id="pieChart"></canvas>
                 </div>
             </div>
         `;
     }
+}
+
+/* ============================================================
+    FUNCIONES AUXILIARES
+============================================================ */
+function parseLocalDate(str) {
+    const [y,m,d] = str.split("-").map(Number);
+    return new Date(y,m-1,d);
+}
+function fechaToString(fecha) {
+    const yyyy = fecha.getFullYear();
+    const mm = String(fecha.getMonth()+1).padStart(2,'0');
+    const dd = String(fecha.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+}
+function formato12(hora24) {
+    let h = parseInt(hora24);
+    const suf = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return `${h} ${suf}`;
 }
 
 /* ============================================================
@@ -184,13 +227,13 @@ function loadSection(section) {
 async function cargarVentasPorMes(year, month) {
     const mes = month.toString().padStart(2,"0");
     const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaGral/VentaGral_${year}_${mes}.json`;
-    try {
-        const res = await fetch(url);
-        if (!res.ok) return [];
-        return await res.json();
-    } catch {
-        return [];
-    }
+    try { const res = await fetch(url); if(!res.ok) return []; return await res.json(); } catch { return []; }
+}
+
+async function cargarDetallePorMes(year, month) {
+    const mes = month.toString().padStart(2,"0");
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${year}_${mes}.json`;
+    try { const res = await fetch(url); if(!res.ok) return []; return await res.json(); } catch { return []; }
 }
 
 /* ============================================================
@@ -203,7 +246,8 @@ async function cargarHoy() {
     const hoyStr = fechaToString(hoy);
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     const filtrado = datos.filter(v => v.Fecha === hoyStr);
-    dibujar(filtrado, "hora", hoy, hoy);
+    dibujarBarras(filtrado, "hora", hoy, hoy);
+    dibujarPastel(await cargarDetalleHoy(hoy));
 }
 
 async function cargarMes() {
@@ -213,112 +257,113 @@ async function cargarMes() {
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
-    dibujar(datos, "dia", primerDia, ultimoDia);
+    dibujarBarras(datos, "dia", primerDia, ultimoDia);
+    dibujarPastel(await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth()+1));
 }
 
-/* ============================================================
-    PERSONALIZADO
-============================================================ */
 async function cargarPersonalizado() {
     const ini = document.getElementById("fechaInicio").value;
     const fin = document.getElementById("fechaFin").value;
-    if (!ini || !fin) return alert("Selecciona ambas fechas");
-
-    function parseLocalDate(str) {
-        const [y,m,d] = str.split("-").map(Number);
-        return new Date(y,m-1,d);
-    }
+    if(!ini || !fin) return alert("Selecciona ambas fechas");
 
     const fi = parseLocalDate(ini);
     const ff = parseLocalDate(fin);
 
-    // Generar lista de meses
+    // Meses a cargar
     let meses = [];
     let y = fi.getFullYear(), m = fi.getMonth()+1;
     const yFin = ff.getFullYear(), mFin = ff.getMonth()+1;
-    while (y < yFin || (y === yFin && m <= mFin)) {
-        meses.push({year: y, month: m});
-        m++;
-        if (m > 12) { m=1; y++; }
+    while (y < yFin || (y===yFin && m<=mFin)) {
+        meses.push({year:y, month:m});
+        m++; if(m>12){ m=1; y++; }
     }
 
-    // Cargar y filtrar
     let resultados = [];
-    for (let mes of meses) {
-        const datosMes = await cargarVentasPorMes(mes.year, mes.month);
-        resultados.push(...datosMes.filter(v => v.Fecha >= ini && v.Fecha <= fin));
+    let detalles = [];
+    for(let mes of meses){
+        const dataMes = await cargarVentasPorMes(mes.year, mes.month);
+        resultados.push(...dataMes.filter(v => v.Fecha>=ini && v.Fecha<=fin));
+        const det = await cargarDetallePorMes(mes.year, mes.month);
+        detalles.push(...det.filter(v => v.Fecha>=ini && v.Fecha<=fin));
     }
 
-    // Determinar modo
     let modo = "dia";
-    if (fi.getTime() === ff.getTime()) modo = "hora";
-    else if (meses.length > 1) modo = "mes";
+    if(fi.getTime()===ff.getTime()) modo="hora";
+    else if(meses.length>1) modo="mes";
 
-    dibujar(resultados, modo, fi, ff);
+    dibujarBarras(resultados, modo, fi, ff);
+    dibujarPastel(detalles);
 }
 
 /* ============================================================
-    FORMATO 12 HORAS
+    DIBUJAR GRÁFICAS
 ============================================================ */
-function formato12(hora24) {
-    let h = parseInt(hora24);
-    const suf = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12;
-    return `${h} ${suf}`;
-}
+function dibujarBarras(data, modo, fi=null, ff=null){
+    if(barChart) barChart.destroy();
+    let grupos={};
 
-function fechaToString(fecha) {
-    const yyyy = fecha.getFullYear();
-    const mm = String(fecha.getMonth()+1).padStart(2,'0');
-    const dd = String(fecha.getDate()).padStart(2,'0');
-    return `${yyyy}-${mm}-${dd}`;
-}
-
-/* ============================================================
-    GRÁFICA
-============================================================ */
-function dibujar(data, modo, fi = null, ff = null) {
-    if (chart) chart.destroy();
-    let grupos = {};
-
-    if (modo === "hora") {
-        data.forEach(v => {
-            if (!v.Hora) return;
-            let h = v.Hora.substring(0,2);
-            h = formato12(h);
-            grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
+    if(modo==="hora"){
+        data.forEach(v=>{
+            if(!v.Hora) return;
+            let h=v.Hora.substring(0,2); h=formato12(h);
+            grupos[h]=(grupos[h]||0)+Number(v.Total||0);
         });
-    } else if (modo === "dia") {
+    } else if(modo==="dia"){
         let current = new Date(fi.getTime());
-        while(current <= ff) {
-            grupos[fechaToString(current)] = 0;
+        while(current<=ff){
+            grupos[fechaToString(current)]=0;
             current.setDate(current.getDate()+1);
         }
-        data.forEach(v => {
-            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
+        data.forEach(v=>{
+            grupos[v.Fecha]=(grupos[v.Fecha]||0)+Number(v.Total||0);
         });
-    } else if (modo === "mes") {
-        const mesesN = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                        "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-        data.forEach(v => {
-            const f = parseLocalDate(v.Fecha);
-            if (f >= fi && f <= ff) {
-                const key = mesesN[f.getMonth()] + " " + f.getFullYear();
-                grupos[key] = (grupos[key] || 0) + Number(v.Total || 0);
+    } else if(modo==="mes"){
+        const mesesN=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        data.forEach(v=>{
+            const f=parseLocalDate(v.Fecha);
+            if(f>=fi && f<=ff){
+                const key=mesesN[f.getMonth()]+" "+f.getFullYear();
+                grupos[key]=(grupos[key]||0)+Number(v.Total||0);
             }
         });
     }
 
-    const labels = Object.keys(grupos);
-    const valores = Object.values(grupos);
-    const total = valores.reduce((a,b)=>a+b,0);
-    document.getElementById("totalCard").innerText = "$"+total.toFixed(2);
+    const labels=Object.keys(grupos);
+    const valores=Object.values(grupos);
+    const total=valores.reduce((a,b)=>a+b,0);
+    document.getElementById("totalValor").innerText="$"+total.toFixed(2);
 
-    chart = new Chart(document.getElementById("grafica"), {
-        type: "bar",
-        data: { labels, datasets:[{ data: valores, backgroundColor: "rgba(0,174,239,0.75)", borderRadius: 12 }] },
-        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+    barChart=new Chart(document.getElementById("grafica"),{
+        type:"bar",
+        data:{ labels, datasets:[{ data:valores, backgroundColor:"rgba(0,174,239,0.75)", borderRadius:12 }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
     });
+}
+
+function dibujarPastel(detalles){
+    if(pieChart) pieChart.destroy();
+    let grupos={};
+    detalles.forEach(v=>{
+        grupos[v.Articulo]=(grupos[v.Articulo]||0)+Number(v.Cantidad||0);
+    });
+
+    const labels=Object.keys(grupos);
+    const valores=Object.values(grupos);
+
+    pieChart=new Chart(document.getElementById("pieChart"),{
+        type:"pie",
+        data:{ labels, datasets:[{ data:valores, backgroundColor:["#00AEEF","#FF6B6B","#FFD93D","#6BCB77","#845EC2","#FF9671"] }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{tooltip:{callbacks:{label:function(ctx){return ctx.label+": "+ctx.raw;}}}, legend:{position:"bottom"}} }
+    });
+}
+
+/* ============================================================
+    CARGAR DETALLE HOY
+============================================================ */
+async function cargarDetalleHoy(hoy){
+    const detalles = await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth()+1);
+    const hoyStr = fechaToString(hoy);
+    return detalles.filter(v=>v.Fecha===hoyStr);
 }
 </script>
 </body>
