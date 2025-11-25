@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -118,6 +117,12 @@
         height: 380px;
         margin: auto;
     }
+
+    input[type="date"] {
+        padding: 7px 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
 </style>
 </head>
 
@@ -133,7 +138,6 @@
     <div class="btn-menu">Clientes</div>
 </div>
 
-
 <div class="content">
 
     <div id="view" class="card">
@@ -142,7 +146,6 @@
     </div>
 
 </div>
-
 
 <script>
 
@@ -222,6 +225,9 @@ async function cargarMes() {
     dibujar(datos, "dia");
 }
 
+/* ============================================================
+    PERSONALIZADO CORREGIDO
+============================================================ */
 async function cargarPersonalizado() {
     const ini = document.getElementById("fechaInicio").value;
     const fin = document.getElementById("fechaFin").value;
@@ -242,12 +248,15 @@ async function cargarPersonalizado() {
     const mesesDiferentes = (ff.getFullYear() - fi.getFullYear()) * 12 +
                             (ff.getMonth() - fi.getMonth());
 
-    if (mesesDiferentes >= 1) {
+    // 🔹 Solo cuando abarca más de 1 mes → gráfico mensual
+    if (mesesDiferentes > 0) {
         dibujar(resultados, "mes");
     }
+    // 🔹 Un solo día → gráfico por hora
     else if (ini === fin) {
         dibujar(resultados, "hora");
     }
+    // 🔹 Rango dentro del mismo mes → gráfico por día
     else {
         dibujar(resultados, "dia");
     }
