@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM4</title>
+<title>Purificadora REM5</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -54,19 +54,15 @@
 
     /* --- RESPONSIVE --- */
     @media(max-width: 768px) {
-
         .menu-toggle {
             display: block;
         }
-
         .sidebar {
             transform: translateX(-100%);
         }
-
         .sidebar.show {
             transform: translateX(0);
         }
-
         .content {
             margin-left: 0;
             padding-top: 60px;
@@ -87,11 +83,11 @@
         z-index: 1000;
     }
 
-    /* --- CONTENIDO PRINCIPAL --- */
+    /* --- CONTENIDO --- */
     .content {
         margin-left: 260px;
         padding: 25px;
-        width: 100%;
+        width: calc(100% - 260px);
     }
 
     .card {
@@ -161,14 +157,12 @@
 
 <script>
 
+/* --------------------- FUNCIONES DE SECCIONES --------------------- */
 function loadSection(section) {
     const view = document.getElementById("view");
-    const sidebar = document.getElementById("sidebar");
-
-    sidebar.classList.remove("show");
+    document.getElementById("sidebar").classList.remove("show");
 
     if (section === "Dashboard") {
-
         view.innerHTML = `
             <h1 class="title">Dashboard de Ventas</h1>
 
@@ -199,41 +193,48 @@ function loadSection(section) {
     view.innerHTML = `<h1 class="title">${section}</h1><p>Contenido próximamente...</p>`;
 }
 
-/* --- CARGAR JSON DEL MES CORRESPONDIENTE --- */
+/* ----------------------- CARGAR JSON ----------------------- */
 async function cargarVentasPorMes(year, month) {
     const mes = month.toString().padStart(2, "0");
     const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/VentaGral/VentaGral_${year}_${mes}.json`;
 
-    const res = await fetch(url);
-    return await res.json();
+    try {
+        const res = await fetch(url);
+
+        if (!res.ok) return []; // si no existe el archivo
+
+        const datos = await res.json();
+
+        if (!Array.isArray(datos)) return [];
+
+        return datos;
+    } catch {
+        return [];
+    }
 }
 
-/* --- HOY --- */
+/* ---------------------- FILTROS ---------------------- */
 async function cargarHoy() {
     const hoy = new Date();
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth() + 1);
 
-    const filtrados = datos.filter(x => x.Fecha === hoy.toISOString().split("T")[0]);
+    const f = hoy.toISOString().split("T")[0];
+    const filtrados = datos.filter(v => v.Fecha === f);
 
     dibujar(filtrados, "hora");
 }
 
-/* --- ESTE MES --- */
 async function cargarMes() {
     const hoy = new Date();
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth() + 1);
     dibujar(datos, "dia");
 }
 
-/* --- PERSONALIZADO --- */
 async function cargarPersonalizado() {
     const ini = document.getElementById("fechaInicio").value;
     const fin = document.getElementById("fechaFin").value;
 
-    if (!ini || !fin) {
-        alert("Selecciona ambas fechas");
-        return;
-    }
+    if (!ini || !fin) return alert("Selecciona ambas fechas");
 
     const fi = new Date(ini);
     const ff = new Date(fin);
@@ -242,53 +243,46 @@ async function cargarPersonalizado() {
 
     for (let d = new Date(fi); d <= ff; d.setDate(d.getDate() + 1)) {
         const datos = await cargarVentasPorMes(d.getFullYear(), d.getMonth() + 1);
-        resultados.push(...datos.filter(x => x.Fecha === d.toISOString().split("T")[0]));
+        const fechaActual = d.toISOString().split("T")[0];
+        resultados.push(...datos.filter(x => x.Fecha === fechaActual));
     }
 
     dibujar(resultados, "auto");
 }
 
-/* --- DIBUJAR TABLA Y GRÁFICA --- */
+/* ---------------------- GRAFICAR ---------------------- */
 let chart = null;
 
 function dibujar(data, modo) {
 
     if (chart) chart.destroy();
 
-    // agrupar según modo
     let grupos = {};
 
     if (modo === "hora") {
         data.forEach(v => {
-            const h = v.Hora.substring(0,2);
-            grupos[h] = (grupos[h] || 0) + v.Total;
+            const h = v.Hora?.substring(0, 2) || "00";
+            grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
         });
-    }
+    } 
     else if (modo === "dia") {
         data.forEach(v => {
-            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + v.Total;
+            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
         });
-    }
-    else { // auto
+    } 
+    else {
+        // AUTO: si 1 día → horas, si varios días → días.
         const dias = new Set(data.map(v => v.Fecha));
-        if (dias.size <= 2) {
-            modo = "hora";
-            return dibujar(data, "hora");
-        } else {
-            modo = "dia";
-            return dibujar(data, "dia");
-        }
+        return dibujar(data, dias.size <= 1 ? "hora" : "dia");
     }
 
-    // convertir a arrays
-    let labels = Object.keys(grupos);
-    let valores = Object.values(grupos);
+    const labels = Object.keys(grupos);
+    const valores = Object.values(grupos);
 
-    // GRAFICAR
     chart = new Chart(document.getElementById("grafica"), {
         type: "bar",
         data: {
-            labels: labels,
+            labels,
             datasets: [{
                 label: "Ventas",
                 data: valores,
@@ -298,20 +292,20 @@ function dibujar(data, modo) {
     });
 
     // TABLA
-    let html = "<table border='1' style='width:100%; border-collapse: collapse;'><tr>";
-
-    html += "<th>Grupo</th><th>Total</th></tr>";
+    let html = `
+        <table border="1" style="width:100%; border-collapse: collapse;">
+            <tr><th>Grupo</th><th>Total</th></tr>
+    `;
 
     labels.forEach((g, i) => {
         html += `<tr><td>${g}</td><td>$${valores[i].toFixed(2)}</td></tr>`;
     });
 
     html += "</table>";
-
     document.getElementById("tablaDatos").innerHTML = html;
 }
 
-/* --- TOGGLE MENU --- */
+/* ------------------- TOGGLE MENU ------------------- */
 function toggleMenu() {
     document.getElementById("sidebar").classList.toggle("show");
 }
