@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM1</title>
+<title>Purificadora REM2</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -15,7 +15,7 @@
         display: flex;
     }
 
-    /* =========== SIDEBAR =========== */
+    /* --- MENU LATERAL --- */
     .sidebar {
         width: 260px;
         height: 100vh;
@@ -28,7 +28,7 @@
         left: 0;
         top: 0;
         box-shadow: 3px 0 10px rgba(0,0,0,0.2);
-        transition: transform .3s ease;
+        transition: transform 0.3s ease;
     }
 
     .sidebar h2 {
@@ -52,7 +52,27 @@
         color: black;
     }
 
-    /* Botón hamburguesa (solo móvil) */
+    /* --- RESPONSIVE --- */
+    @media(max-width: 768px) {
+
+        .menu-toggle {
+            display: block;
+        }
+
+        .sidebar {
+            transform: translateX(-100%);
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+        .content {
+            margin-left: 0;
+            padding-top: 60px;
+        }
+    }
+
     .menu-toggle {
         display: none;
         position: fixed;
@@ -67,12 +87,11 @@
         z-index: 1000;
     }
 
-    /* =========== CONTENIDO =========== */
+    /* --- CONTENIDO PRINCIPAL --- */
     .content {
         margin-left: 260px;
         padding: 25px;
         width: 100%;
-        transition: margin-left .3s ease;
     }
 
     .card {
@@ -89,31 +108,37 @@
         color: #333;
     }
 
-    /* ===== RESPONSIVE ===== */
-    @media(max-width: 768px) {
-        .sidebar {
-            transform: translateX(-100%);
-        }
-        .sidebar.show {
-            transform: translateX(0);
-        }
-        .menu-toggle {
-            display: block;
-        }
-        .content {
-            margin-left: 0;
-            padding-top: 60px;
-        }
+    .btnAction {
+        padding: 10px 15px;
+        margin: 5px;
+        background: #00AEEF;
+        color: #fff;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
     }
 
+    .date-group {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+
+    input[type="date"] {
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
 </style>
 </head>
+
 <body>
 
 <!-- Botón hamburguesa -->
 <div class="menu-toggle" onclick="toggleMenu()">☰</div>
 
-<!-- MENU -->
+<!-- MENU LATERAL -->
 <div class="sidebar" id="sidebar">
     <h2>Purificadora REM</h2>
 
@@ -126,7 +151,7 @@
     <div class="btn-menu" onclick="loadSection('Inmobiliario')">Inmobiliario</div>
 </div>
 
-<!-- CONTENIDO -->
+<!-- CONTENIDO CENTRAL -->
 <div class="content">
     <div id="view" class="card">
         <h1 class="title">Bienvenido</h1>
@@ -136,156 +161,159 @@
 
 <script>
 
-function toggleMenu() {
-    document.getElementById("sidebar").classList.toggle("show");
-}
-
-/* ================================
-   FUNCION PARA CARGAR SECCIONES
-================================ */
 function loadSection(section) {
-    if (section !== "Dashboard") {
-        document.getElementById("view").innerHTML =
-            <h1 class='title'>${section}</h1><p>En construcción...</p>;
+    const view = document.getElementById("view");
+    const sidebar = document.getElementById("sidebar");
+
+    sidebar.classList.remove("show");
+
+    if (section === "Dashboard") {
+
+        view.innerHTML = `
+            <h1 class="title">Dashboard de Ventas</h1>
+
+            <div class="date-group">
+                <div>
+                    <label>Fecha Inicio</label><br>
+                    <input type="date" id="fechaInicio">
+                </div>
+                <div>
+                    <label>Fecha Fin</label><br>
+                    <input type="date" id="fechaFin">
+                </div>
+            </div>
+
+            <button class="btnAction" onclick="cargarHoy()">Hoy</button>
+            <button class="btnAction" onclick="cargarMes()">Este Mes</button>
+            <button class="btnAction" onclick="cargarPersonalizado()">Personalizado</button>
+
+            <div class="card">
+                <canvas id="grafica"></canvas>
+            </div>
+
+            <div id="tablaDatos" class="card"></div>
+        `;
         return;
     }
 
-    loadDashboard();
+    view.innerHTML = <h1 class="title">${section}</h1><p>Contenido próximamente...</p>;
 }
 
-/* ================================
-           GITHUB JSON
-================================ */
+/* --- CARGAR JSON DEL MES CORRESPONDIENTE --- */
+async function cargarVentasPorMes(year, month) {
+    const mes = month.toString().padStart(2, "0");
+    const url = https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/VentaGral/VentaGral_${year}_${mes}.json;
 
-function getJsonUrl(year, month) {
-    return https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/VentaGral/VentaGral_${year}_${month}.json;
+    const res = await fetch(url);
+    return await res.json();
 }
 
-/* ================================
-           DASHBOARD
-================================ */
-
-let chart;
-
-function loadDashboard() {
-    document.getElementById("view").innerHTML = `
-        <h1 class="title">Dashboard</h1>
-
-        <div style="margin-bottom:20px;">
-            <label>Desde:</label>
-            <input type="date" id="desde">
-
-            <label>Hasta:</label>
-            <input type="date" id="hasta">
-
-            <button onclick="loadPersonalizado()">Personalizado</button>
-            <button onclick="loadHoy()">Hoy</button>
-            <button onclick="loadMes()">Este Mes</button>
-        </div>
-
-        <canvas id="grafica" height="120"></canvas>
-    `;
-}
-
-/* ---- Cargar datos desde GitHub ---- */
-async function loadJson(year, month) {
-    const url = getJsonUrl(year, month);
-
-    try {
-        const res = await fetch(url);
-        if (!res.ok) return [];
-        return await res.json();
-    } catch {
-        return [];
-    }
-}
-
-/* ---- HOY ---- */
-async function loadHoy() {
+/* --- HOY --- */
+async function cargarHoy() {
     const hoy = new Date();
-    const y = hoy.getFullYear();
-    const m = String(hoy.getMonth() + 1).padStart(2, "0");
-    const d = String(hoy.getDate()).padStart(2, "0");
+    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth() + 1);
 
-    const data = await loadJson(y, m);
-    const ventasHoy = data.filter(x => x.Fecha === ${y}-${m}-${d});
+    const filtrados = datos.filter(x => x.Fecha === hoy.toISOString().split("T")[0]);
 
-    const agrupado = {};
-
-    ventasHoy.forEach(v => {
-        const hora = v.Hora.substring(0,2) + ":00";
-        agrupado[hora] = (agrupado[hora] || 0) + v.Total;
-    });
-
-    drawChart(Object.keys(agrupado), Object.values(agrupado), "Ventas por Hora (Hoy)");
+    dibujar(filtrados, "hora");
 }
 
-/* ---- ESTE MES ---- */
-async function loadMes() {
-    const ahora = new Date();
-    const y = ahora.getFullYear();
-    const m = String(ahora.getMonth()+1).padStart(2,"0");
-
-    const data = await loadJson(y,m);
-
-    const agrupado = {};
-
-    data.forEach(v => {
-        const dia = v.Fecha.substring(8,10);
-        agrupado[dia] = (agrupado[dia] || 0) + v.Total;
-    });
-
-    drawChart(Object.keys(agrupado), Object.values(agrupado), "Venta por Día (Mes Actual)");
+/* --- ESTE MES --- */
+async function cargarMes() {
+    const hoy = new Date();
+    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth() + 1);
+    dibujar(datos, "dia");
 }
 
-/* ---- PERSONALIZADO ---- */
-async function loadPersonalizado() {
-    const desde = document.getElementById("desde").value;
-    const hasta = document.getElementById("hasta").value;
+/* --- PERSONALIZADO --- */
+async function cargarPersonalizado() {
+    const ini = document.getElementById("fechaInicio").value;
+    const fin = document.getElementById("fechaFin").value;
 
-    if (!desde || !hasta) {
-        alert("Selecciona un rango de fechas");
+    if (!ini || !fin) {
+        alert("Selecciona ambas fechas");
         return;
     }
 
-    let fi = new Date(desde);
-    let ff = new Date(hasta);
+    const fi = new Date(ini);
+    const ff = new Date(fin);
 
-    const resultados = {};
+    let resultados = [];
 
-    while (fi <= ff) {
-        const y = fi.getFullYear();
-        const m = String(fi.getMonth()+1).padStart(2,"0");
-        const d = String(fi.getDate()).padStart(2,"0");
-
-        const data = await loadJson(y,m);
-
-        data.filter(x => x.Fecha === ${y}-${m}-${d}).forEach(v => {
-            resultados[d] = (resultados[d] || 0) + v.Total;
-        });
-
-        fi.setDate(fi.getDate()+1);
+    for (let d = new Date(fi); d <= ff; d.setDate(d.getDate() + 1)) {
+        const datos = await cargarVentasPorMes(d.getFullYear(), d.getMonth() + 1);
+        resultados.push(...datos.filter(x => x.Fecha === d.toISOString().split("T")[0]));
     }
 
-    drawChart(Object.keys(resultados), Object.values(resultados), "Personalizado");
+    dibujar(resultados, "auto");
 }
 
-/* ---- GRAFICAR ---- */
-function drawChart(labels, values, title) {
-    const ctx = document.getElementById("grafica");
+/* --- DIBUJAR TABLA Y GRÁFICA --- */
+let chart = null;
+
+function dibujar(data, modo) {
 
     if (chart) chart.destroy();
 
-    chart = new Chart(ctx, {
+    // agrupar según modo
+    let grupos = {};
+
+    if (modo === "hora") {
+        data.forEach(v => {
+            const h = v.Hora.substring(0,2);
+            grupos[h] = (grupos[h] || 0) + v.Total;
+        });
+    }
+    else if (modo === "dia") {
+        data.forEach(v => {
+            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + v.Total;
+        });
+    }
+    else { // auto
+        const dias = new Set(data.map(v => v.Fecha));
+        if (dias.size <= 2) {
+            modo = "hora";
+            return dibujar(data, "hora");
+        } else {
+            modo = "dia";
+            return dibujar(data, "dia");
+        }
+    }
+
+    // convertir a arrays
+    let labels = Object.keys(grupos);
+    let valores = Object.values(grupos);
+
+    // GRAFICAR
+    chart = new Chart(document.getElementById("grafica"), {
         type: "bar",
         data: {
-            labels,
+            labels: labels,
             datasets: [{
-                label: title,
-                data: values
+                label: "Ventas",
+                data: valores,
+                backgroundColor: "rgba(0, 174, 239, .6)"
             }]
         }
     });
+
+    // TABLA
+    let html = "<table border='1' style='width:100%; border-collapse: collapse;'><tr>";
+
+    html += "<th>Grupo</th><th>Total</th></tr>";
+
+    labels.forEach((g, i) => {
+        html += <tr><td>${g}</td><td>$${valores[i].toFixed(2)}</td></tr>;
+    });
+
+    html += "</table>";
+
+    document.getElementById("tablaDatos").innerHTML = html;
+}
+
+/* --- TOGGLE MENU --- */
+function toggleMenu() {
+    document.getElementById("sidebar").classList.toggle("show");
 }
 
 </script>
