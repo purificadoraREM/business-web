@@ -3,25 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM 1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
+    --card-bg: #ffffff;
     --primary: #00AEEF;
-    --primary-dark: #0086bd;
-    --bg-card: #ffffff;
-    --bg-body: #f5f7fb;
-    --text-dark: #222;
-    --shadow: 0 6px 20px rgba(0,0,0,0.08);
+    --text: #222;
+    --shadow: 0 8px 20px rgba(0,0,0,0.08);
     --radius: 14px;
-    --font: "Segoe UI", sans-serif;
 }
 
 body {
     margin: 0;
     display: flex;
-    background: var(--bg-body);
-    font-family: var(--font);
+    background: #f5f7fb;
+    font-family: "Segoe UI", sans-serif;
 }
 
 /* Sidebar */
@@ -39,6 +36,7 @@ body {
     text-align: center;
     color: var(--primary);
     font-size: 22px;
+    margin-bottom: 30px;
 }
 .btn-menu {
     margin: 8px 15px;
@@ -61,9 +59,8 @@ body {
     width: calc(100% - 260px);
 }
 
-/* Cards */
 .card {
-    background: var(--bg-card);
+    background: var(--card-bg);
     padding: 20px;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
@@ -76,60 +73,53 @@ body {
     font-weight: bold;
 }
 
-/* Botones */
 button.btnAction {
-    padding: 10px 20px;
+    padding: 10px 18px;
     background: var(--primary);
     border: none;
     color: white;
-    border-radius: var(--radius);
+    border-radius: 10px;
     cursor: pointer;
-    font-weight: 600;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    transition: 0.3s;
+    transition: .2s;
+    font-weight: bold;
+    margin-right: 10px;
 }
 button.btnAction:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-/* Inputs fecha */
-input[type="date"] {
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 14px;
+    background: #0086bd;
 }
 
 /* Contenedor botones + tarjeta */
 #controlRow {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 #totalCard {
-    padding: 16px 24px;
-    font-size: 20px;
-    font-weight: bold;
-    color: white;
-    background: linear-gradient(90deg,#00AEEF,#0086bd);
+    display: inline-block;
+    padding: 12px 20px;
+    background: #fff;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--primary);
     margin-left: auto;
 }
 
-/* Chart wrapper */
+/* Inputs fecha */
+input[type="date"] {
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+/* Gráfico */
 #chartWrapper {
     width: 100%;
     max-width: 800px;
-    height: 420px;
-    margin: 20px auto 0 auto;
-}
-
-/* canvas */
-canvas {
-    border-radius: var(--radius);
+    height: 400px;
+    margin: auto;
 }
 </style>
 </head>
@@ -172,6 +162,7 @@ function loadSection(section) {
 
                     <input type="date" id="fechaInicio">
                     <input type="date" id="fechaFin">
+
                     <button class="btnAction" onclick="cargarPersonalizado()">Personalizado</button>
 
                     <div id="totalCard">$0.00</div>
@@ -188,16 +179,18 @@ function loadSection(section) {
 }
 
 /* ============================================================
-    CARGAR JSON
+    CARGA DE JSON
 ============================================================ */
 async function cargarVentasPorMes(year, month) {
-    const mes = month.toString().padStart(2, "0");
+    const mes = month.toString().padStart(2,"0");
     const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaGral/VentaGral_${year}_${mes}.json`;
     try {
         const res = await fetch(url);
         if (!res.ok) return [];
         return await res.json();
-    } catch { return []; }
+    } catch {
+        return [];
+    }
 }
 
 /* ============================================================
@@ -217,9 +210,9 @@ async function cargarMes() {
     document.getElementById("fechaInicio").value = "";
     document.getElementById("fechaFin").value = "";
     const hoy = new Date();
-    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
+    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     dibujar(datos, "dia", primerDia, ultimoDia);
 }
 
@@ -231,39 +224,50 @@ async function cargarPersonalizado() {
     const fin = document.getElementById("fechaFin").value;
     if (!ini || !fin) return alert("Selecciona ambas fechas");
 
-    const [startY, startM] = ini.split("-").map(Number);
-    const [endY, endM] = fin.split("-").map(Number);
-
-    const meses = [];
-    let y = startY, m = startM;
-    while (y < endY || (y===endY && m<=endM)) {
-        meses.push({year:y, month:m});
-        m++; if(m>12){ m=1; y++; }
+    function parseLocalDate(str) {
+        const [y,m,d] = str.split("-").map(Number);
+        return new Date(y,m-1,d);
     }
 
+    const fi = parseLocalDate(ini);
+    const ff = parseLocalDate(fin);
+
+    // Generar lista de meses
+    let meses = [];
+    let y = fi.getFullYear(), m = fi.getMonth()+1;
+    const yFin = ff.getFullYear(), mFin = ff.getMonth()+1;
+    while (y < yFin || (y === yFin && m <= mFin)) {
+        meses.push({year: y, month: m});
+        m++;
+        if (m > 12) { m=1; y++; }
+    }
+
+    // Cargar y filtrar
     let resultados = [];
-    for(let mes of meses){
+    for (let mes of meses) {
         const datosMes = await cargarVentasPorMes(mes.year, mes.month);
-        resultados.push(...datosMes.filter(v=>v.Fecha>=ini && v.Fecha<=fin));
+        resultados.push(...datosMes.filter(v => v.Fecha >= ini && v.Fecha <= fin));
     }
 
-    const unDia = ini===fin;
-    const variosMeses = meses.length>1;
-    const modo = unDia ? "hora" : (variosMeses ? "mes" : "dia");
+    // Determinar modo
+    let modo = "dia";
+    if (fi.getTime() === ff.getTime()) modo = "hora";
+    else if (meses.length > 1) modo = "mes";
 
-    dibujar(resultados, modo, new Date(ini), new Date(fin));
+    dibujar(resultados, modo, fi, ff);
 }
 
 /* ============================================================
-    UTILIDADES
+    FORMATO 12 HORAS
 ============================================================ */
-function formato12(hora24){
+function formato12(hora24) {
     let h = parseInt(hora24);
-    const suf = h>=12?"PM":"AM";
-    h = h%12||12;
+    const suf = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
     return `${h} ${suf}`;
 }
-function fechaToString(fecha){
+
+function fechaToString(fecha) {
     const yyyy = fecha.getFullYear();
     const mm = String(fecha.getMonth()+1).padStart(2,'0');
     const dd = String(fecha.getDate()).padStart(2,'0');
@@ -271,35 +275,36 @@ function fechaToString(fecha){
 }
 
 /* ============================================================
-    GRAFICA MODERNA
+    GRÁFICA
 ============================================================ */
-function dibujar(data, modo, fi=null, ff=null){
-    if(chart) chart.destroy();
+function dibujar(data, modo, fi = null, ff = null) {
+    if (chart) chart.destroy();
     let grupos = {};
 
-    if(modo==="hora"){
-        data.forEach(v=>{
-            if(!v.Hora) return;
+    if (modo === "hora") {
+        data.forEach(v => {
+            if (!v.Hora) return;
             let h = v.Hora.substring(0,2);
             h = formato12(h);
-            grupos[h] = (grupos[h]||0)+Number(v.Total||0);
+            grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
         });
-    } else if(modo==="dia"){
+    } else if (modo === "dia") {
         let current = new Date(fi.getTime());
-        while(current <= ff){
-            const key = fechaToString(current);
-            grupos[key]=0;
+        while(current <= ff) {
+            grupos[fechaToString(current)] = 0;
             current.setDate(current.getDate()+1);
         }
-        data.forEach(v=>{ grupos[v.Fecha]=(grupos[v.Fecha]||0)+Number(v.Total||0); });
-    } else if(modo==="mes"){
-        const mesesN=["Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-        data.forEach(v=>{
-            const f = new Date(v.Fecha);
-            if(f>=fi && f<=ff){
+        data.forEach(v => {
+            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
+        });
+    } else if (modo === "mes") {
+        const mesesN = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                        "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        data.forEach(v => {
+            const f = parseLocalDate(v.Fecha);
+            if (f >= fi && f <= ff) {
                 const key = mesesN[f.getMonth()] + " " + f.getFullYear();
-                grupos[key]=(grupos[key]||0)+Number(v.Total||0);
+                grupos[key] = (grupos[key] || 0) + Number(v.Total || 0);
             }
         });
     }
@@ -307,42 +312,14 @@ function dibujar(data, modo, fi=null, ff=null){
     const labels = Object.keys(grupos);
     const valores = Object.values(grupos);
     const total = valores.reduce((a,b)=>a+b,0);
-    document.getElementById("totalCard").innerText = "$"+total.toLocaleString('es-MX',{minimumFractionDigits:2});
+    document.getElementById("totalCard").innerText = "$"+total.toFixed(2);
 
     chart = new Chart(document.getElementById("grafica"), {
-        type:"bar",
-        data:{
-            labels,
-            datasets:[{
-                data:valores,
-                backgroundColor: ctx=>{
-                    const color1 = 'rgba(0,174,239,0.85)';
-                    const color2 = 'rgba(0,174,239,0.45)';
-                    return ctx.dataIndex%2===0?color1:color2;
-                },
-                borderRadius:12,
-                barThickness:30
-            }]
-        },
-        options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            plugins:{
-                legend:{display:false},
-                tooltip:{
-                    callbacks:{
-                        label: ctx => "$"+ctx.raw.toLocaleString('es-MX',{minimumFractionDigits:2})
-                    }
-                }
-            },
-            scales:{
-                x:{grid:{display:false},ticks:{color:'#333',font:{weight:'500'}}},
-                y:{grid:{color:'#eee'},ticks:{color:'#333',font:{weight:'500'},beginAtZero:true}}
-            }
-        }
+        type: "bar",
+        data: { labels, datasets:[{ data: valores, backgroundColor: "rgba(0,174,239,0.75)", borderRadius: 12 }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
     });
 }
 </script>
-
 </body>
 </html>
