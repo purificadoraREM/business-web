@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM2</title>
+<title>Purificadora REM3</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -196,13 +196,13 @@ function loadSection(section) {
         return;
     }
 
-    view.innerHTML = <h1 class="title">${section}</h1><p>Contenido próximamente...</p>;
+    view.innerHTML = `<h1 class="title">${section}</h1><p>Contenido próximamente...</p>`;
 }
 
 /* --- CARGAR JSON DEL MES CORRESPONDIENTE --- */
 async function cargarVentasPorMes(year, month) {
     const mes = month.toString().padStart(2, "0");
-    const url = https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/VentaGral/VentaGral_${year}_${mes}.json;
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/VentaGral/VentaGral_${year}_${mes}.json`;
 
     const res = await fetch(url);
     return await res.json();
