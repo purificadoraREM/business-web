@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> Purificadora REM1</title>
+<title> Purificadora REM3</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -222,18 +222,21 @@ async function cargarPersonalizado() {
     const fin = document.getElementById("fechaFin").value;
     if (!ini || !fin) return alert("Selecciona ambas fechas");
 
+    // Obtener año y mes de inicio y fin
     const [startY, startM] = ini.split("-").map(Number);
     const [endY, endM] = fin.split("-").map(Number);
 
-    // Generar lista de meses a cargar
-    let meses = [];
-    let y = startY, m = startM;
+    // Generar lista de meses a cargar (YYYY, MM)
+    const meses = [];
+    let y = startY;
+    let m = startM;
     while (y < endY || (y === endY && m <= endM)) {
-        meses.push({year: y, month: m});
+        meses.push({ year: y, month: m });
         m++;
         if (m > 12) { m = 1; y++; }
     }
 
+    // Cargar todos los meses y filtrar solo las fechas dentro del rango
     let resultados = [];
     for (let mes of meses) {
         const datosMes = await cargarVentasPorMes(mes.year, mes.month);
