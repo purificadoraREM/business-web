@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -31,6 +31,7 @@ body {
     height: 100vh;
     padding-top: 25px;
     box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
 }
 .sidebar h2 {
     text-align: center;
@@ -111,7 +112,7 @@ button.btnAction:hover {
 }
 
 /* Inputs fecha */
-input[type="date"] {
+input[type="date"], input[type="number"] {
     padding: 7px 10px;
     border-radius: 8px;
     border: 1px solid #ccc;
@@ -137,14 +138,34 @@ input[type="date"] {
     width: 35%;
     height: 400px;
 }
+
+/* Tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px){
+    .content { margin-left: 0; width: 100%; padding: 10px; }
+    .sidebar { transform: translateX(-100%); position: fixed; z-index: 10; }
+    .sidebar.active { transform: translateX(0); }
+    #chartsContainer { flex-direction: column; }
+    #chartWrapper, #pieWrapper { width: 100%; height: 300px; }
+}
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <h2>REM Dashboard</h2>
+<div class="sidebar" id="sidebar">
+    <h2>Purificadora REM</h2>
     <div class="btn-menu" onclick="loadSection('Dashboard')">Dashboard</div>
-    <div class="btn-menu">Empleados</div>
+    <div class="btn-menu" onclick="loadSection('Empleados')">Empleados</div>
     <div class="btn-menu">Productos</div>
     <div class="btn-menu">Cortes</div>
     <div class="btn-menu">Inventario</div>
@@ -168,27 +189,22 @@ let pieChart = null;
 function loadSection(section) {
     const view = document.getElementById("view");
 
-    if (section === "Dashboard") {
+    if(section === "Dashboard") {
         view.innerHTML = `
             <h1 class="title">Dashboard de Ventas</h1>
-
             <div class="card">
                 <div id="controlRow">
                     <button class="btnAction" onclick="cargarHoy()">Hoy</button>
                     <button class="btnAction" onclick="cargarMes()">Este Mes</button>
-
                     <input type="date" id="fechaInicio">
                     <input type="date" id="fechaFin">
-
                     <button class="btnAction" onclick="cargarPersonalizado()">Personalizado</button>
-
                     <div id="totalCard">
                         <span>Total Ventas</span>
                         <span id="totalValor">$0.00</span>
                     </div>
                 </div>
             </div>
-
             <div id="chartsContainer">
                 <div id="chartWrapper">
                     <canvas id="grafica"></canvas>
@@ -196,6 +212,28 @@ function loadSection(section) {
                 <div id="pieWrapper">
                     <canvas id="pieChart"></canvas>
                 </div>
+            </div>
+        `;
+    } else if(section === "Empleados") {
+        view.innerHTML = `
+            <h1 class="title">Empleados</h1>
+            <div class="card">
+                <h2>Registro de Empleados</h2>
+                <div id="controlEmpleado">
+                    <input type="date" id="fechaRegistro">
+                    <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
+                </div>
+                <div id="tablaRegistros"></div>
+            </div>
+            <div class="card">
+                <h2>Calcular Pago</h2>
+                <div id="controlPago">
+                    <input type="date" id="fechaPagoInicio">
+                    <input type="date" id="fechaPagoFin">
+                    <input type="number" id="pagoHora" placeholder="Pago por hora">
+                    <button class="btnAction" onclick="calcularPago()">Calcular</button>
+                </div>
+                <div id="resultadoPago"></div>
             </div>
         `;
     }
@@ -229,15 +267,19 @@ async function cargarVentasPorMes(year, month) {
     const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaGral/VentaGral_${year}_${mes}.json`;
     try { const res = await fetch(url); if(!res.ok) return []; return await res.json(); } catch { return []; }
 }
-
 async function cargarDetallePorMes(year, month) {
     const mes = month.toString().padStart(2,"0");
     const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${year}_${mes}.json`;
     try { const res = await fetch(url); if(!res.ok) return []; return await res.json(); } catch { return []; }
 }
+async function cargarDetalleHoy(hoy){
+    const detalles = await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth()+1);
+    const hoyStr = fechaToString(hoy);
+    return detalles.filter(v=>v.Fecha===hoyStr);
+}
 
 /* ============================================================
-    BOTONES
+    BOTONES VENTAS
 ============================================================ */
 async function cargarHoy() {
     document.getElementById("fechaInicio").value = "";
@@ -249,7 +291,6 @@ async function cargarHoy() {
     dibujarBarras(filtrado, "hora", hoy, hoy);
     dibujarPastel(await cargarDetalleHoy(hoy));
 }
-
 async function cargarMes() {
     document.getElementById("fechaInicio").value = "";
     document.getElementById("fechaFin").value = "";
@@ -260,16 +301,13 @@ async function cargarMes() {
     dibujarBarras(datos, "dia", primerDia, ultimoDia);
     dibujarPastel(await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth()+1));
 }
-
 async function cargarPersonalizado() {
     const ini = document.getElementById("fechaInicio").value;
     const fin = document.getElementById("fechaFin").value;
     if(!ini || !fin) return alert("Selecciona ambas fechas");
-
     const fi = parseLocalDate(ini);
     const ff = parseLocalDate(fin);
 
-    // Meses a cargar
     let meses = [];
     let y = fi.getFullYear(), m = fi.getMonth()+1;
     const yFin = ff.getFullYear(), mFin = ff.getMonth()+1;
@@ -358,12 +396,89 @@ function dibujarPastel(detalles){
 }
 
 /* ============================================================
-    CARGAR DETALLE HOY
+    EMPLEADOS
 ============================================================ */
-async function cargarDetalleHoy(hoy){
-    const detalles = await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth()+1);
-    const hoyStr = fechaToString(hoy);
-    return detalles.filter(v=>v.Fecha===hoyStr);
+function calcularHoras(hEntrada, hSalida) {
+    const [h1,m1] = hEntrada.split(":").map(Number);
+    const [h2,m2] = hSalida.split(":").map(Number);
+    let start = h1 + m1/60;
+    let end = h2 + m2/60;
+    if(end<start) end += 24;
+    const totalHoras = end - start;
+    const horas = Math.floor(totalHoras);
+    const minutos = Math.round((totalHoras - horas)*60);
+    return { horas, minutos };
+}
+
+async function cargarRegistros() {
+    const fecha = document.getElementById("fechaRegistro").value;
+    if(!fecha) return alert("Selecciona una fecha");
+
+    const [y,m,d] = fecha.split("-").map(Number);
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/RegEmpleados/RegEmpleados_${y}_${String(m).padStart(2,'0')}.json`;
+
+    let res = [];
+    try { const r = await fetch(url); if(r.ok) res = await r.json(); } catch {}
+
+    const filtrados = res.filter(e => e.Fecha === fecha);
+
+    let html = "<table><tr><th>Empleado</th><th>Entrada</th><th>Salida</th><th>Horas Trabajadas</th></tr>";
+    filtrados.forEach(e=>{
+        const { horas, minutos } = calcularHoras(e.HoraEntrada, e.HoraSalida);
+        html += `<tr>
+                    <td>${e.Nombre}</td>
+                    <td>${e.HoraEntrada}</td>
+                    <td>${e.HoraSalida}</td>
+                    <td>${horas}:${minutos.toString().padStart(2,'0')}</td>
+                 </tr>`;
+    });
+    html += "</table>";
+    document.getElementById("tablaRegistros").innerHTML = html;
+}
+
+async function calcularPago() {
+    const fechaIni = document.getElementById("fechaPagoInicio").value;
+    const fechaFin = document.getElementById("fechaPagoFin").value;
+    const pagoHora = parseFloat(document.getElementById("pagoHora").value);
+    if(!fechaIni || !fechaFin || isNaN(pagoHora)) return alert("Completa todos los campos");
+
+    const [yIni,mIni] = fechaIni.split("-").map(Number);
+    const [yFin,mFin] = fechaFin.split("-").map(Number);
+
+    let meses = [];
+    let y = yIni, m = mIni;
+    while(y<yFin || (y===yFin && m<=mFin)) {
+        meses.push({y,m});
+        m++; if(m>12){ m=1;y++;}
+    }
+
+    let registros = [];
+    for(let mes of meses){
+        const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/RegEmpleados/RegEmpleados_${mes.y}_${String(mes.m).padStart(2,'0')}.json`;
+        try { const r = await fetch(url); if(r.ok){ const data = await r.json(); registros.push(...data);} } catch {}
+    }
+
+    const fi = new Date(fechaIni);
+    const ff = new Date(fechaFin);
+    const filtrados = registros.filter(e=>{
+        const f = new Date(e.Fecha);
+        return f>=fi && f<=ff;
+    });
+
+    const pagos = {};
+    filtrados.forEach(e=>{
+        const { horas, minutos } = calcularHoras(e.HoraEntrada,e.HoraSalida);
+        if(!pagos[e.Nombre]) pagos[e.Nombre] = { horasRedondeadas:0 };
+        pagos[e.Nombre].horasRedondeadas += horas + minutos/60;
+    });
+
+    let html = "<table><tr><th>Empleado</th><th>Total Horas</th><th>Pago</th></tr>";
+    for(let nom in pagos){
+        const total = pagos[nom].horasRedondeadas;
+        html += `<tr><td>${nom}</td><td>${total.toFixed(2)}</td><td>$${(total*pagoHora).toFixed(2)}</td></tr>`;
+    }
+    html += "</table>";
+    document.getElementById("resultadoPago").innerHTML = html;
 }
 </script>
 </body>
