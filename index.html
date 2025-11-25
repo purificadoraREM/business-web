@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 :root {
     --card-bg: #ffffff;
@@ -32,6 +31,7 @@ body {
     height: 100vh;
     padding-top: 25px;
     box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
 }
 .sidebar h2 {
     text-align: center;
@@ -89,7 +89,7 @@ button.btnAction:hover {
     background: #0086bd;
 }
 
-/* Contenedor botones + total */
+/* Contenedor botones + tarjeta */
 #controlRow {
     display: flex;
     align-items: center;
@@ -149,15 +149,27 @@ th, td {
     border: 1px solid #ccc;
     text-align: center;
 }
+
+/* Responsive */
+@media screen and (max-width: 768px){
+    .content { margin-left: 0; width: 100%; padding: 10px; }
+    .sidebar { transform: translateX(-100%); position: fixed; z-index: 10; }
+    .sidebar.active { transform: translateX(0); }
+    #chartsContainer { flex-direction: column; }
+    #chartWrapper, #pieWrapper { width: 100%; height: 300px; }
+}
 </style>
 </head>
-
 <body>
 
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
     <h2>Purificadora REM</h2>
     <div class="btn-menu" onclick="loadSection('Dashboard')">Dashboard</div>
     <div class="btn-menu" onclick="loadSection('Empleados')">Empleados</div>
+    <div class="btn-menu">Productos</div>
+    <div class="btn-menu">Cortes</div>
+    <div class="btn-menu">Inventario</div>
+    <div class="btn-menu">Clientes</div>
 </div>
 
 <div class="content">
@@ -171,9 +183,9 @@ th, td {
 let barChart = null;
 let pieChart = null;
 
-/* ============================================
+/* ============================================================
     CARGAR SECCIÓN
-============================================ */
+============================================================ */
 function loadSection(section) {
     const view = document.getElementById("view");
 
@@ -202,48 +214,44 @@ function loadSection(section) {
                 </div>
             </div>
         `;
-    }
-
-    else if(section === "Empleados") {
+    } else if(section === "Empleados") {
         view.innerHTML = `
             <h1 class="title">Empleados</h1>
-
-            <!-- Registro -->
             <div class="card">
                 <h2>Registro de Empleados</h2>
-                <input type="date" id="fechaRegistro">
-                <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
+                <div id="controlEmpleado">
+                    <input type="date" id="fechaRegistro">
+                    <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
+                </div>
                 <div id="tablaRegistros"></div>
             </div>
-
-            <!-- Pago -->
             <div class="card">
                 <h2>Calcular Pago</h2>
-                <input type="date" id="fechaPagoInicio">
-                <input type="date" id="fechaPagoFin">
-                <input type="number" id="pagoHora" placeholder="Pago por hora">
-                <button class="btnAction" onclick="calcularPago()">Calcular</button>
+                <div id="controlPago">
+                    <input type="date" id="fechaPagoInicio">
+                    <input type="date" id="fechaPagoFin">
+                    <input type="number" id="pagoHora" placeholder="Pago por hora">
+                    <button class="btnAction" onclick="calcularPago()">Calcular</button>
+                </div>
                 <div id="resultadoPago"></div>
             </div>
         `;
     }
 }
 
-/* ============================================
+/* ============================================================
     FUNCIONES AUXILIARES
-============================================ */
+============================================================ */
 function parseLocalDate(str) {
     const [y,m,d] = str.split("-").map(Number);
-    return new Date(y, m - 1, d);
+    return new Date(y,m-1,d);
 }
-
 function fechaToString(fecha) {
     const yyyy = fecha.getFullYear();
-    const mm = String(fecha.getMonth() + 1).padStart(2,'0');
+    const mm = String(fecha.getMonth()+1).padStart(2,'0');
     const dd = String(fecha.getDate()).padStart(2,'0');
     return `${yyyy}-${mm}-${dd}`;
 }
-
 function formato12(hora24) {
     let h = parseInt(hora24);
     const suf = h >= 12 ? "PM" : "AM";
@@ -251,176 +259,154 @@ function formato12(hora24) {
     return `${h} ${suf}`;
 }
 
-/* ============================================
-    CARGA JSON
-============================================ */
+/* ============================================================
+    CARGA DE JSON
+============================================================ */
 async function cargarVentasPorMes(year, month) {
-    const mes = String(month).padStart(2,"0");
+    const mes = month.toString().padStart(2,"0");
     const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaGral/VentaGral_${year}_${mes}.json`;
-
-    try {
-        const res = await fetch(url);
-        if(!res.ok) return [];
-        return await res.json();
-    } catch {
-        return [];
-    }
+    try { const res = await fetch(url); if(!res.ok) return []; return await res.json(); } catch { return []; }
 }
-
 async function cargarDetallePorMes(year, month) {
-    const mes = String(month).padStart(2,"0");
+    const mes = month.toString().padStart(2,"0");
     const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${year}_${mes}.json`;
-
-    try {
-        const res = await fetch(url);
-        if(!res.ok) return [];
-        return await res.json();
-    } catch {
-        return [];
-    }
+    try { const res = await fetch(url); if(!res.ok) return []; return await res.json(); } catch { return []; }
 }
-
 async function cargarDetalleHoy(hoy){
     const detalles = await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth()+1);
     const hoyStr = fechaToString(hoy);
-    return detalles.filter(v=>v.Fecha === hoyStr);
+    return detalles.filter(v=>v.Fecha===hoyStr);
 }
 
-/* ============================================
-    BOTONES DASHBOARD
-============================================ */
+/* ============================================================
+    BOTONES VENTAS
+============================================================ */
 async function cargarHoy() {
+    document.getElementById("fechaInicio").value = "";
+    document.getElementById("fechaFin").value = "";
     const hoy = new Date();
-    const fecha = fechaToString(hoy);
-
-    const ventas = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
-    const filtrado = ventas.filter(v => v.Fecha === fecha);
-
+    const hoyStr = fechaToString(hoy);
+    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
+    const filtrado = datos.filter(v => v.Fecha === hoyStr);
     dibujarBarras(filtrado, "hora", hoy, hoy);
     dibujarPastel(await cargarDetalleHoy(hoy));
 }
-
-    async function cargarMes() {
+async function cargarMes() {
+    document.getElementById("fechaInicio").value = "";
+    document.getElementById("fechaFin").value = "";
     const hoy = new Date();
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
-    const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-
-    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth() + 1);
-
+    const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
+    const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     dibujarBarras(datos, "dia", primerDia, ultimoDia);
-    dibujarPastel(await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth() + 1));
+    dibujarPastel(await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth()+1));
 }
-
 async function cargarPersonalizado() {
     const ini = document.getElementById("fechaInicio").value;
     const fin = document.getElementById("fechaFin").value;
     if(!ini || !fin) return alert("Selecciona ambas fechas");
-
     const fi = parseLocalDate(ini);
     const ff = parseLocalDate(fin);
 
     let meses = [];
-    let y = fi.getFullYear(), m = fi.getMonth() + 1;
-    const yFin = ff.getFullYear(), mFin = ff.getMonth() + 1;
-
-    while (y < yFin || (y === yFin && m <= mFin)) {
-        meses.push({year: y, month: m});
-        m++; if(m > 12){ m = 1; y++; }
+    let y = fi.getFullYear(), m = fi.getMonth()+1;
+    const yFin = ff.getFullYear(), mFin = ff.getMonth()+1;
+    while (y < yFin || (y===yFin && m<=mFin)) {
+        meses.push({year:y, month:m});
+        m++; if(m>12){ m=1; y++; }
     }
 
     let resultados = [];
     let detalles = [];
-
-    for(let mes of meses) {
+    for(let mes of meses){
         const dataMes = await cargarVentasPorMes(mes.year, mes.month);
-        resultados.push(...dataMes.filter(v => v.Fecha >= ini && v.Fecha <= fin));
-
+        resultados.push(...dataMes.filter(v => v.Fecha>=ini && v.Fecha<=fin));
         const det = await cargarDetallePorMes(mes.year, mes.month);
-        detalles.push(...det.filter(v => v.Fecha >= ini && v.Fecha <= fin));
+        detalles.push(...det.filter(v => v.Fecha>=ini && v.Fecha<=fin));
     }
 
     let modo = "dia";
-    if(fi.getTime() === ff.getTime()) modo = "hora";
-    else if(meses.length > 1) modo = "mes";
+    if(fi.getTime()===ff.getTime()) modo="hora";
+    else if(meses.length>1) modo="mes";
 
     dibujarBarras(resultados, modo, fi, ff);
     dibujarPastel(detalles);
 }
 
-/* ============================================
+/* ============================================================
     DIBUJAR GRÁFICAS
-============================================ */
+============================================================ */
 function dibujarBarras(data, modo, fi=null, ff=null){
     if(barChart) barChart.destroy();
-    let grupos = {};
+    let grupos={};
 
-    if(modo === "hora") {
-        data.forEach(v => {
+    if(modo==="hora"){
+        data.forEach(v=>{
             if(!v.Hora) return;
-            let h = v.Hora.substring(0,2); h = formato12(h);
-            grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
+            let h=v.Hora.substring(0,2); h=formato12(h);
+            grupos[h]=(grupos[h]||0)+Number(v.Total||0);
         });
-    } else if(modo === "dia") {
+    } else if(modo==="dia"){
         let current = new Date(fi.getTime());
-        while(current <= ff){
-            grupos[fechaToString(current)] = 0;
-            current.setDate(current.getDate() + 1);
+        while(current<=ff){
+            grupos[fechaToString(current)]=0;
+            current.setDate(current.getDate()+1);
         }
-        data.forEach(v => {
-            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
+        data.forEach(v=>{
+            grupos[v.Fecha]=(grupos[v.Fecha]||0)+Number(v.Total||0);
         });
-    } else if(modo === "mes") {
-        const mesesN = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-        data.forEach(v => {
-            const f = parseLocalDate(v.Fecha);
-            if(f >= fi && f <= ff){
-                const key = mesesN[f.getMonth()] + " " + f.getFullYear();
-                grupos[key] = (grupos[key] || 0) + Number(v.Total || 0);
+    } else if(modo==="mes"){
+        const mesesN=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        data.forEach(v=>{
+            const f=parseLocalDate(v.Fecha);
+            if(f>=fi && f<=ff){
+                const key=mesesN[f.getMonth()]+" "+f.getFullYear();
+                grupos[key]=(grupos[key]||0)+Number(v.Total||0);
             }
         });
     }
 
-    const labels = Object.keys(grupos);
-    const valores = Object.values(grupos);
-    const total = valores.reduce((a,b) => a+b,0);
-    document.getElementById("totalValor").innerText = "$" + total.toFixed(2);
+    const labels=Object.keys(grupos);
+    const valores=Object.values(grupos);
+    const total=valores.reduce((a,b)=>a+b,0);
+    document.getElementById("totalValor").innerText="$"+total.toFixed(2);
 
-    barChart = new Chart(document.getElementById("grafica"), {
-        type: "bar",
-        data: { labels, datasets: [{ data: valores, backgroundColor: "rgba(0,174,239,0.75)", borderRadius: 12 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    barChart=new Chart(document.getElementById("grafica"),{
+        type:"bar",
+        data:{ labels, datasets:[{ data:valores, backgroundColor:"rgba(0,174,239,0.75)", borderRadius:12 }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
     });
 }
 
 function dibujarPastel(detalles){
     if(pieChart) pieChart.destroy();
-    let grupos = {};
-    detalles.forEach(v => {
-        grupos[v.Articulo] = (grupos[v.Articulo] || 0) + Number(v.Cantidad || 0);
+    let grupos={};
+    detalles.forEach(v=>{
+        grupos[v.Articulo]=(grupos[v.Articulo]||0)+Number(v.Cantidad||0);
     });
 
-    const labels = Object.keys(grupos);
-    const valores = Object.values(grupos);
+    const labels=Object.keys(grupos);
+    const valores=Object.values(grupos);
 
-    pieChart = new Chart(document.getElementById("pieChart"), {
-        type: "pie",
-        data: { labels, datasets: [{ data: valores, backgroundColor: ["#00AEEF","#FF6B6B","#FFD93D","#6BCB77","#845EC2","#FF9671"] }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: function(ctx){ return ctx.label + ": " + ctx.raw; } } }, legend: { position: "bottom" } } }
+    pieChart=new Chart(document.getElementById("pieChart"),{
+        type:"pie",
+        data:{ labels, datasets:[{ data:valores, backgroundColor:["#00AEEF","#FF6B6B","#FFD93D","#6BCB77","#845EC2","#FF9671"] }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{tooltip:{callbacks:{label:function(ctx){return ctx.label+": "+ctx.raw;}}}, legend:{position:"bottom"}} }
     });
 }
 
-/* ============================================
+/* ============================================================
     EMPLEADOS
-============================================ */
+============================================================ */
 function calcularHoras(hEntrada, hSalida) {
     const [h1,m1] = hEntrada.split(":").map(Number);
     const [h2,m2] = hSalida.split(":").map(Number);
     let start = h1 + m1/60;
     let end = h2 + m2/60;
-    if(end < start) end += 24;
+    if(end<start) end += 24;
     const totalHoras = end - start;
     const horas = Math.floor(totalHoras);
-    const minutos = Math.round((totalHoras - horas) * 60);
+    const minutos = Math.round((totalHoras - horas)*60);
     return { horas, minutos };
 }
 
@@ -437,7 +423,7 @@ async function cargarRegistros() {
     const filtrados = res.filter(e => e.Fecha === fecha);
 
     let html = "<table><tr><th>Empleado</th><th>Entrada</th><th>Salida</th><th>Horas Trabajadas</th></tr>";
-    filtrados.forEach(e => {
+    filtrados.forEach(e=>{
         const { horas, minutos } = calcularHoras(e.HoraEntrada, e.HoraSalida);
         html += `<tr>
                     <td>${e.Nombre}</td>
@@ -461,9 +447,9 @@ async function calcularPago() {
 
     let meses = [];
     let y = yIni, m = mIni;
-    while(y < yFin || (y === yFin && m <= mFin)){
+    while(y<yFin || (y===yFin && m<=mFin)) {
         meses.push({y,m});
-        m++; if(m > 12){ m = 1; y++; }
+        m++; if(m>12){ m=1;y++;}
     }
 
     let registros = [];
@@ -474,22 +460,22 @@ async function calcularPago() {
 
     const fi = new Date(fechaIni);
     const ff = new Date(fechaFin);
-    const filtrados = registros.filter(e => {
+    const filtrados = registros.filter(e=>{
         const f = new Date(e.Fecha);
-        return f >= fi && f <= ff;
+        return f>=fi && f<=ff;
     });
 
     const pagos = {};
-    filtrados.forEach(e => {
-        const { horas, minutos } = calcularHoras(e.HoraEntrada, e.HoraSalida);
-        if(!pagos[e.Nombre]) pagos[e.Nombre] = { horasRedondeadas: 0 };
+    filtrados.forEach(e=>{
+        const { horas, minutos } = calcularHoras(e.HoraEntrada,e.HoraSalida);
+        if(!pagos[e.Nombre]) pagos[e.Nombre] = { horasRedondeadas:0 };
         pagos[e.Nombre].horasRedondeadas += horas + minutos/60;
     });
 
     let html = "<table><tr><th>Empleado</th><th>Total Horas</th><th>Pago</th></tr>";
     for(let nom in pagos){
         const total = pagos[nom].horasRedondeadas;
-        html += `<tr><td>${nom}</td><td>${total.toFixed(2)}</td><td>$${(total * pagoHora).toFixed(2)}</td></tr>`;
+        html += `<tr><td>${nom}</td><td>${total.toFixed(2)}</td><td>$${(total*pagoHora).toFixed(2)}</td></tr>`;
     }
     html += "</table>";
     document.getElementById("resultadoPago").innerHTML = html;
