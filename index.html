@@ -74,7 +74,7 @@
         color: black;
     }
 
-    /* --- BOTÓN HAMBURGUESA (solo móvil) --- */
+    /* --- BOTÓN (solo móvil) --- */
     .menu-toggle {
         display: none;
         position: fixed;
@@ -142,13 +142,13 @@
 <div class="sidebar" id="sidebar">
     <h2>   Purificadora REM</h2>
 
-    <div class="btn-menu" onclick="loadSection('asistencias')">Asistencias</div>
-    <div class="btn-menu" onclick="loadSection('empleados')">Empleados</div>
-    <div class="btn-menu" onclick="loadSection('stock')">Stock</div>
+    <div class="btn-menu" onclick="loadSection('Dashboard')">Dashboard</div>
+    <div class="btn-menu" onclick="loadSection('Empleados')">Empleados</div>
+    <div class="btn-menu" onclick="loadSection('Productos')">Productos</div>
     <div class="btn-menu" onclick="loadSection('cortes')">Cortes de Venta</div>
-    <div class="btn-menu" onclick="loadSection('movimientos')">Movimientos</div>
-    <div class="btn-menu" onclick="loadSection('productos')">Productos</div>
-    <div class="btn-menu" onclick="loadSection('clientes')">Clientes</div>
+    <div class="btn-menu" onclick="loadSection('Inventario')">Inventario</div>
+    <div class="btn-menu" onclick="loadSection('Clientes')">Clientes</div>
+    <div class="btn-menu" onclick="loadSection('Inmobiliario')">Inmobiliario</div>
 </div>
 
 <!-- CONTENIDO CENTRAL -->
@@ -167,26 +167,26 @@
         let html = "";
 
         switch(section) {
-            case "asistencias":
+            case "Dashboard":
                 html = "<h1 class='title'>Asistencias</h1><p>Aquí mostraremos las asistencias.</p>";
                 break;
-            case "empleados":
-                html = "<h1 class='title'>Empleados</h1><p>Listado de empleados.</p>";
+            case "Empleados":
+                html = "<h1 class='title'>Empleados</h1><p>informacion de empleados.</p>";
                 break;
-            case "stock":
-                html = "<h1 class='title'>Stock</h1><p>Inventario actual.</p>";
+            case "Productos":
+                html = "<h1 class='title'>Stock</h1><p>informacion de Productos.</p>";
                 break;
             case "cortes":
                 html = "<h1 class='title'>Cortes de Venta</h1><p>Historial de cortes.</p>";
                 break;
-            case "movimientos":
-                html = "<h1 class='title'>Movimientos</h1><p>Movimientos del inventario.</p>";
+            case "Inventario":
+                html = "<h1 class='title'>Inventario</h1><p>Movimientos del inventario.</p>";
                 break;
-            case "productos":
-                html = "<h1 class='title'>Productos</h1><p>Gestión de productos.</p>";
+            case "Clientes":
+                html = "<h1 class='title'>Clientes</h1><p>Informacion de clientes.</p>";
                 break;
-            case "clientes":
-                html = "<h1 class='title'>Clientes</h1><p>Listado de clientes.</p>";
+            case "Inmobiliario":
+                html = "<h1 class='title'>Inmobiliario</h1><p>Listado de Inmobiliario.</p>";
                 break;
         }
 
