@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dashboard REM</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -223,17 +223,25 @@ async function cargarPersonalizado() {
     const fin = document.getElementById("fechaFin").value;
     if (!ini || !fin) return alert("Selecciona ambas fechas");
 
-    const fi = new Date(ini);
-    const ff = new Date(fin);
-    let resultados = [];
+    let fi = new Date(ini);
+    let ff = new Date(fin);
 
-    for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime()+24*60*60*1000)) {
-        const yyyy = d.getFullYear();
-        const mm = d.getMonth()+1;
-        const dd = String(d.getDate()).padStart(2,'0');
-        const fechaStr = `${yyyy}-${String(mm).padStart(2,'0')}-${dd}`;
-        const datosMes = await cargarVentasPorMes(yyyy, mm);
-        resultados.push(...datosMes.filter(v => v.Fecha === fechaStr));
+    // Determinar todos los meses involucrados
+    let meses = [];
+    for (let d = new Date(fi.getFullYear(), fi.getMonth(), 1); 
+         d <= ff; 
+         d.setMonth(d.getMonth()+1)) {
+        meses.push({ year: d.getFullYear(), month: d.getMonth()+1 });
+    }
+
+    let resultados = [];
+    for (let m of meses) {
+        const datosMes = await cargarVentasPorMes(m.year, m.month);
+        // Filtrar solo las fechas dentro del rango exacto
+        resultados.push(...datosMes.filter(v => {
+            const f = new Date(v.Fecha);
+            return f >= fi && f <= ff;
+        }));
     }
 
     const unDia = fi.getTime() === ff.getTime();
@@ -242,6 +250,7 @@ async function cargarPersonalizado() {
 
     dibujar(resultados, modo, fi, ff);
 }
+
 
 /* ============================================================
     FORMATO 12 HORAS
