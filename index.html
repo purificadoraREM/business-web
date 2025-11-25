@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -285,9 +285,20 @@ function dibujar(data, modo) {
             grupos[h] = (grupos[h] || 0) + Number(v.Total || 0);
         });
     } else if (modo === "dia") {
-        data.forEach(v => {
-            grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
-        });
+    // Crear todas las fechas del rango
+    let dias = [];
+    const fi = new Date(data[0]?.Fecha || new Date());
+    const ff = new Date(data[data.length-1]?.Fecha || new Date());
+
+    for (let d = new Date(fi); d <= ff; d.setDate(d.getDate()+1)) {
+        dias.push(d.toISOString().split("T")[0]);
+    }
+
+    dias.forEach(dia => grupos[dia] = 0); // inicializa todos los días en 0
+
+    data.forEach(v => {
+        grupos[v.Fecha] = (grupos[v.Fecha] || 0) + Number(v.Total || 0);
+    });
     } else if (modo === "mes") {
         const meses = [
             "Enero","Febrero","Marzo","Abril","Mayo","Junio",
