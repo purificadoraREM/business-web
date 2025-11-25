@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -181,12 +181,13 @@ function loadSection(section) {
 ============================================================ */
 async function cargarVentasPorMes(year, month) {
     const mes = month.toString().padStart(2, "0");
-    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/data/main/VentaGral/VentaGral_${year}_${mes}.json`;
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaGral/VentaGral_${year}_${mes}.json`;
     try {
         const res = await fetch(url);
-        if (!res.ok) return [];
+        if (!res.ok) return []; // Si no existe el archivo, devuelve vacío
         return await res.json();
-    } catch {
+    } catch (err) {
+        console.error("Error al cargar JSON:", err);
         return [];
     }
 }
@@ -216,33 +217,28 @@ async function cargarMes() {
 async function cargarPersonalizado() {
     const ini = document.getElementById("fechaInicio").value;
     const fin = document.getElementById("fechaFin").value;
-
     if (!ini || !fin) return alert("Selecciona ambas fechas");
 
     const fi = new Date(ini);
     const ff = new Date(fin);
-
     let resultados = [];
 
-    // Recorrer rango día por día
-    for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime() + 24*60*60*1000)) {
-        const datos = await cargarVentasPorMes(d.getFullYear(), d.getMonth()+1);
+    // Recorre día por día
+    for (let d = new Date(fi.getTime()); d <= ff; d = new Date(d.getTime()+24*60*60*1000)) {
         const yyyy = d.getFullYear();
-        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const mm = d.getMonth()+1;
         const dd = String(d.getDate()).padStart(2,'0');
-        const fecha = `${yyyy}-${mm}-${dd}`;
-        resultados.push(...datos.filter(v => v.Fecha === fecha));
+        const fechaStr = `${yyyy}-${String(mm).padStart(2,'0')}-${dd}`;
+
+        const datosMes = await cargarVentasPorMes(yyyy, mm);
+        resultados.push(...datosMes.filter(v => v.Fecha === fechaStr));
     }
 
     const mismoMes = fi.getFullYear() === ff.getFullYear() && fi.getMonth() === ff.getMonth();
     const unDia = fi.getTime() === ff.getTime();
+    let modo = (!mismoMes) ? "mes" : (unDia ? "hora" : "dia");
 
-    let modo = "";
-    if (!mismoMes) modo = "mes";
-    else if (unDia) modo = "hora";
-    else modo = "dia";
-
-    dibujar(resultados, modo);
+    dibujar(resultados, modo, fi, ff);
 }
 
 /* ============================================================
