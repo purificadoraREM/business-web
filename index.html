@@ -163,7 +163,7 @@ th, td {
     
 <div class="sidebar" id="sidebar">
     <h2>Purificadora REM</h2>
-    <div class="btn-menu" onclick="loadSection('Dashboard')">Dashboard</div>
+    <div class="btn-menu" onclick="loadSection('Dashboard')">Ventas</div>
     <div class="btn-menu" onclick="loadSection('Empleados')">Empleados</div>
     <div class="btn-menu">Productos</div>
     <div class="btn-menu">Cortes</div>
@@ -190,7 +190,7 @@ function loadSection(section) {
 
     if(section === "Dashboard") {
         view.innerHTML = `
-            <h1 class="title">Dashboard de Ventas</h1>
+            <h1 class="title">Registro de Ventas</h1>
             <div class="card">
                 <div id="controlRow">
                     <button class="btnAction" onclick="cargarHoy()">Hoy</button>
@@ -217,7 +217,7 @@ function loadSection(section) {
         view.innerHTML = `
             <h1 class="title">Empleados</h1>
             <div class="card">
-                <h2>Registro de Empleados</h2>
+                <h2>Asistencias</h2>
                 <div id="controlEmpleado">
                     <input type="date" id="fechaRegistro">
                     <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
