@@ -399,14 +399,15 @@ function dibujarPastel(detalles){
     EMPLEADOS
 ============================================================ */
 function calcularHoras(hEntrada, hSalida) {
+    if(!hEntrada || !hSalida) return null; // si falta hora, devuelve null
     const [h1,m1] = hEntrada.split(":").map(Number);
     const [h2,m2] = hSalida.split(":").map(Number);
     let start = h1 + m1/60;
     let end = h2 + m2/60;
-    if(end<start) end += 24;
+    if(end < start) end += 24;
     const totalHoras = end - start;
     const horas = Math.floor(totalHoras);
-    const minutos = Math.round((totalHoras - horas)*60);
+    const minutos = Math.round((totalHoras - horas) * 60);
     return { horas, minutos };
 }
 
@@ -423,15 +424,16 @@ async function cargarRegistros() {
     const filtrados = res.filter(e => e.Fecha === fecha);
 
     let html = "<table><tr><th>Empleado</th><th>Entrada</th><th>Salida</th><th>Horas Trabajadas</th></tr>";
-    filtrados.forEach(e=>{
-        const { horas, minutos } = calcularHoras(e.HoraEntrada, e.HoraSalida);
-        html += `<tr>
-                    <td>${e.Nombre}</td>
-                    <td>${e.HoraEntrada}</td>
-                    <td>${e.HoraSalida}</td>
-                    <td>${horas}:${minutos.toString().padStart(2,'0')}</td>
-                 </tr>`;
-    });
+    filtrados.forEach(e => {
+    const horasTrabajadas = calcularHoras(e.HoraEntrada, e.HoraSalida);
+    html += `<tr>
+                <td>${e.Nombre}</td>
+                <td>${e.HoraEntrada || "null"}</td>
+                <td>${e.HoraSalida || "null"}</td>
+                <td>${horasTrabajadas ? `${horasTrabajadas.horas}:${horasTrabajadas.minutos.toString().padStart(2,'0')}` : "null"}</td>
+             </tr>`;
+});
+
     html += "</table>";
     document.getElementById("tablaRegistros").innerHTML = html;
 }
@@ -455,7 +457,13 @@ async function calcularPago() {
     let registros = [];
     for(let mes of meses){
         const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/RegEmpleados/RegEmpleados_${mes.y}_${String(mes.m).padStart(2,'0')}.json`;
-        try { const r = await fetch(url); if(r.ok){ const data = await r.json(); registros.push(...data);} } catch {}
+        try { 
+            const r = await fetch(url); 
+            if(r.ok){ 
+                const data = await r.json(); 
+                registros.push(...data);
+            } 
+        } catch {}
     }
 
     const fi = new Date(fechaIni);
@@ -466,20 +474,29 @@ async function calcularPago() {
     });
 
     const pagos = {};
-    filtrados.forEach(e=>{
-        const { horas, minutos } = calcularHoras(e.HoraEntrada,e.HoraSalida);
-        if(!pagos[e.Nombre]) pagos[e.Nombre] = { horasRedondeadas:0 };
-        pagos[e.Nombre].horasRedondeadas += horas + minutos/60;
+    let registrosIncompletos = false;
+
+    filtrados.forEach(e => {
+        const horasTrabajadas = calcularHoras(e.HoraEntrada, e.HoraSalida);
+        if(!horasTrabajadas){ 
+            registrosIncompletos = true; 
+            return; // ignora este registro en el cálculo
+        }
+        if(!pagos[e.Nombre]) pagos[e.Nombre] = 0;
+        pagos[e.Nombre] += horasTrabajadas.horas + horasTrabajadas.minutos / 60;
     });
+
+    if(registrosIncompletos) alert("Algunos registros tienen horas incompletas y no se incluyeron en el cálculo de pago.");
 
     let html = "<table><tr><th>Empleado</th><th>Total Horas</th><th>Pago</th></tr>";
     for(let nom in pagos){
-        const total = pagos[nom].horasRedondeadas;
+        const total = pagos[nom];
         html += `<tr><td>${nom}</td><td>${total.toFixed(2)}</td><td>$${(total*pagoHora).toFixed(2)}</td></tr>`;
     }
     html += "</table>";
     document.getElementById("resultadoPago").innerHTML = html;
 }
+
 </script>
 </body>
 </html>
