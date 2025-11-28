@@ -806,31 +806,32 @@ async function cargarProductos() {
         if(r.ok) prodRel = await r.json();
     } catch{}
 
-    let htmlRel = `
-        <table>
-            <tr>
-                <th>Nombre</th>
-                <th>Descripcion</th>
-                <th>Categoria</th>
-                <th>StockMinimo</th>
-                <th>StockActual</th>
-                <th>Unidad</th>
-            </tr>
+ let htmlRel = `
+    <table>
+        <tr>
+            <th>ID Producto</th>
+            <th>Producto</th>
+            <th>ID Consumible</th>
+            <th>Consumible</th>
+            <th>Usuario</th>
+        </tr>
+`;
+
+prodRel.forEach(p => {
+    htmlRel += `
+        <tr>
+            <td>${p.IDProducto}</td>
+            <td>${p.Producto}</td>
+            <td>${p.IDConsumible}</td>
+            <td>${p.Consumible}</td>
+            <td>${p.Usuario}</td>
+        </tr>
     `;
-    prodRel.forEach(p => {
-        htmlRel += `
-            <tr>
-                <td>${p.Nombre}</td>
-                <td>${p.Descripcion}</td>
-                <td>${p.Categoria}</td>
-                <td>${p.StockMinimo}</td>
-                <td>${p.StockActual}</td>
-                <td>${p.Unidad}</td>
-            </tr>
-        `;
-    });
-    htmlRel += "</table>";
-    document.getElementById("tablaProductoRelacionado").innerHTML = htmlRel;
+});
+
+htmlRel += "</table>";
+document.getElementById("tablaProductoRelacionado").innerHTML = htmlRel;
+
 }
 
 
