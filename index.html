@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -158,6 +158,27 @@ th, td {
     #chartsContainer { flex-direction: column; }
     #chartWrapper, #pieWrapper { width: 100%; height: 300px; }
 }
+
+/* Tablas producto y movimientos */
+.card table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.card table th, .card table td {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+.card table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+.card table tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+    
 </style>
 </head>
 <body>
@@ -242,8 +263,46 @@ function loadSection(section) {
             </div>
         `;
     }
+
+else if(section === "Productos") {
+    view.innerHTML = `
+        <h1 class="title">Productos</h1>
+
+        <!-- PANEL MOVIMIENTOS -->
+        <div class="card">
+            <h2>Movimientos</h2>
+            <div id="controlMovimientos" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                <input type="date" id="fechaMovInicio">
+                <input type="date" id="fechaMovFin">
+                <button class="btnAction" onclick="cargarMovimientos()">Buscar</button>
+                <button class="btnAction" onclick="exportarMovimientosExcel()">Exportar a Excel</button>
+            </div>
+            <div id="tablaMovimientos" style="overflow-x:auto;"></div>
+        </div>
+
+        <!-- PANEL PRODUCTO -->
+        <div class="card">
+            <h2>Producto</h2>
+            <div id="tablaProducto" style="overflow-x:auto;"></div>
+        </div>
+
+        <!-- PANEL PRODUCTO RELACIONADO -->
+        <div class="card">
+            <h2>Producto Relacionado</h2>
+            <div id="tablaProductoRelacionado" style="overflow-x:auto;"></div>
+        </div>
+    `;
+
+    // Cargar tablas de productos
+    cargarProductos();
 }
 
+    
+}
+
+
+
+    
 /* ============================================================
     FUNCIONES AUXILIARES
 ============================================================ */
@@ -699,6 +758,170 @@ const hoja2 = XLSX.utils.json_to_sheet(reporteArr);
 
 
  /* ============================================================
+  productos y relacionados
+============================================================ */
+async function cargarProductos() {
+    // PRODUCTO
+    const urlProd = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/Producto/Producto.json`;
+    let productos = [];
+    try {
+        const r = await fetch(urlProd);
+        if(r.ok) productos = await r.json();
+    } catch{}
+
+    let htmlProd = `
+        <table>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripcion</th>
+                <th>Categoria</th>
+                <th>StockMinimo</th>
+                <th>StockActual</th>
+                <th>Unidad</th>
+            </tr>
+    `;
+    productos.forEach(p => {
+        htmlProd += `
+            <tr>
+                <td>${p.Nombre}</td>
+                <td>${p.Descripcion}</td>
+                <td>${p.Categoria}</td>
+                <td>${p.StockMinimo}</td>
+                <td>${p.StockActual}</td>
+                <td>${p.Unidad}</td>
+            </tr>
+        `;
+    });
+    htmlProd += "</table>";
+    document.getElementById("tablaProducto").innerHTML = htmlProd;
+
+    // PRODUCTO RELACIONADO
+    const urlRel = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/ProductoRelacionado/ProductoRelacionado.json`;
+    let prodRel = [];
+    try {
+        const r = await fetch(urlRel);
+        if(r.ok) prodRel = await r.json();
+    } catch{}
+
+    let htmlRel = `
+        <table>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripcion</th>
+                <th>Categoria</th>
+                <th>StockMinimo</th>
+                <th>StockActual</th>
+                <th>Unidad</th>
+            </tr>
+    `;
+    prodRel.forEach(p => {
+        htmlRel += `
+            <tr>
+                <td>${p.Nombre}</td>
+                <td>${p.Descripcion}</td>
+                <td>${p.Categoria}</td>
+                <td>${p.StockMinimo}</td>
+                <td>${p.StockActual}</td>
+                <td>${p.Unidad}</td>
+            </tr>
+        `;
+    });
+    htmlRel += "</table>";
+    document.getElementById("tablaProductoRelacionado").innerHTML = htmlRel;
+}
+
+
+ /* ============================================================
+   movimientos
+============================================================ */
+
+    
+let movimientosFiltrados = []; // Datos filtrados para exportar
+
+async function cargarMovimientos() {
+    const ini = document.getElementById("fechaMovInicio").value;
+    const fin = document.getElementById("fechaMovFin").value;
+
+    if(!ini || !fin) return alert("Selecciona ambas fechas");
+
+    const fIni = parseLocalDate(ini);
+    const fFin = parseLocalDate(fin);
+
+    // Cargar movimientos
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/Movimiento/Movimiento_${fIni.getFullYear()}_${String(fIni.getMonth()+1).padStart(2,'0')}.json`;
+    let registros = [];
+    try {
+        const r = await fetch(url);
+        if(r.ok) registros = await r.json();
+    } catch{}
+
+    // Filtrar por rango de fechas
+    const filtrados = registros.filter(r => {
+        const f = parseLocalDate(r.Fecha);
+        return f >= fIni && f <= fFin;
+    });
+
+    movimientosFiltrados = filtrados; // Guardar para exportar
+
+    // Crear tabla sin mostrar CostoUnitario
+    let html = `
+        <table>
+            <tr>
+                <th>MovimientoID</th>
+                <th>ProductoID</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Fecha</th>
+                <th>StockAntesMov</th>
+                <th>StockDespMov</th>
+                <th>Referencia</th>
+                <th>Observaciones</th>
+            </tr>
+    `;
+    filtrados.forEach(r => {
+        html += `
+            <tr>
+                <td>${r.MovimientoID}</td>
+                <td>${r.ProductoID}</td>
+                <td>${r.Tipo}</td>
+                <td>${r.Cantidad}</td>
+                <td>${r.Fecha}</td>
+                <td>${r.StockAntesMov}</td>
+                <td>${r.StockDespMov}</td>
+                <td>${r.Referencia ?? ""}</td>
+                <td>${r.Observaciones ?? ""}</td>
+            </tr>
+        `;
+    });
+    html += "</table>";
+
+    document.getElementById("tablaMovimientos").innerHTML = html;
+}
+
+function exportarMovimientosExcel() {
+    if(movimientosFiltrados.length === 0) return alert("No hay registros para exportar");
+
+    const dataExport = movimientosFiltrados.map(r => ({
+        MovimientoID: r.MovimientoID,
+        ProductoID: r.ProductoID,
+        Tipo: r.Tipo,
+        Cantidad: r.Cantidad,
+        Fecha: r.Fecha,
+        StockAntesMov: r.StockAntesMov,
+        StockDespMov: r.StockDespMov,
+        Referencia: r.Referencia ?? "",
+        Observaciones: r.Observaciones ?? ""
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(dataExport);
+    XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
+    XLSX.writeFile(wb, "Movimientos.xlsx");
+}
+
+
+    
+     /* ============================================================
    fin
 ============================================================ */
 </script>
