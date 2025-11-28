@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1027,6 +1027,20 @@ function exportarCortesExcel() {
 }
 
 
+function limpiarCortes() {
+    // Limpiar inputs
+    const iniInput = document.getElementById("fechaCorteInicio");
+    const finInput = document.getElementById("fechaCorteFin");
+    if(iniInput) iniInput.value = "";
+    if(finInput) finInput.value = "";
+
+    // Limpiar array
+    cortesFiltrados = [];
+
+    // Limpiar tabla
+    const tabla = document.getElementById("tablaCortes");
+    if(tabla) tabla.innerHTML = "<p>Búsqueda limpia. Selecciona fechas para cargar cortes.</p>";
+}
 
 
 
