@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -271,13 +271,16 @@ else if(section === "Productos") {
         <!-- PANEL MOVIMIENTOS -->
         <div class="card">
             <h2>Movimientos</h2>
-            <div id="controlMovimientos" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
-                <input type="date" id="fechaMovInicio">
-                <input type="date" id="fechaMovFin">
-                <button class="btnAction" onclick="cargarMovimientos()">Buscar</button>
-                <button class="btnAction" onclick="exportarMovimientosExcel()">Exportar a Excel</button>
-            </div>
-            <div id="tablaMovimientos" style="overflow-x:auto;"></div>
+<div id="controlMovimientos" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+    <input type="date" id="fechaMovInicio">
+    <input type="date" id="fechaMovFin">
+    <button class="btnAction" onclick="cargarMovimientos()">Buscar</button>
+    <button class="btnAction" onclick="exportarMovimientosExcel()">Exportar a Excel</button>
+    <button class="btnAction" onclick="limpiarMovimientos()">Limpiar</button>
+</div>
+<div id="tablaMovimientos" style="max-height:400px; overflow-y:auto; overflow-x:auto; border:1px solid #ccc;"></div>
+
+            
         </div>
 
         <!-- PANEL PRODUCTO -->
@@ -918,7 +921,17 @@ function exportarMovimientosExcel() {
     XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
     XLSX.writeFile(wb, "Movimientos.xlsx");
 }
+        
+/* ============================================================
+   Limpiar movimiento
+============================================================ */
 
+function limpiarMovimientos() {
+    document.getElementById("fechaMovInicio").value = "";
+    document.getElementById("fechaMovFin").value = "";
+    document.getElementById("tablaMovimientos").innerHTML = "";
+    movimientosFiltrados = [];
+}
 
     
      /* ============================================================
