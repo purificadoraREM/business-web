@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -182,6 +182,7 @@ th, td {
 <script>
 let barChart = null;
 let pieChart = null;
+let registrosDetalleFiltrados = [];
 
 /* ============================================================
     CARGAR SECCIÓN
@@ -292,6 +293,7 @@ async function cargarHoy() {
     const hoyStr = fechaToString(hoy);
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     const filtrado = datos.filter(v => v.Fecha === hoyStr);
+    registrosDetalleFiltrados = detalleHoy;
     dibujarBarras(filtrado, "hora", hoy, hoy);
     dibujarPastel(await cargarDetalleHoy(hoy));
 }
@@ -302,6 +304,7 @@ async function cargarMes() {
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
+    registrosDetalleFiltrados = detallesMes;
     dibujarBarras(datos, "dia", primerDia, ultimoDia);
     dibujarPastel(await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth()+1));
 }
@@ -332,9 +335,11 @@ async function cargarPersonalizado() {
     let modo = "dia";
     if(fi.getTime()===ff.getTime()) modo="hora";
     else if(meses.length>1) modo="mes";
-
+   
     dibujarBarras(resultados, modo, fi, ff);
     dibujarPastel(detalles);
+    registrosDetalleFiltrados = detalles;
+   
 }
 
 /* ============================================================
@@ -618,26 +623,17 @@ function exportarAsistencias() {
     /* ============================================================
    exportar Venta a Excel
 ============================================================ */
-async function exportarVentasExcel() {
-    const hoy = new Date(); 
-    const year = hoy.getFullYear();
-    const month = hoy.getMonth() + 1;
-    const mesTxt = String(month).padStart(2,"0");
 
-    // === Cargar Detalle del Mes completo ===
-    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${year}_${mesTxt}.json`;
-    let detalles = [];
-    try {
-        const r = await fetch(url);
-        if (r.ok) detalles = await r.json();
-    } catch {}
+    function exportarVentasExcel() {
 
-    if (detalles.length === 0) {
-        return alert("No se encontraron registros para este mes.");
+    if (!registrosDetalleFiltrados || registrosDetalleFiltrados.length === 0) {
+        return alert("No hay datos cargados. Primero selecciona un rango o un día.");
     }
 
+    const detalles = registrosDetalleFiltrados;
+
     /* ============================================
-        HOJA 1: REGISTRO DE VENTAS COMPLETO
+        HOJA 1: REGISTRO DE VENTAS (sin modificar)
     =============================================*/
     const hoja1 = XLSX.utils.json_to_sheet(detalles);
 
@@ -645,6 +641,7 @@ async function exportarVentasExcel() {
         HOJA 2: REPORTE SAT
     =============================================*/
     let reporte = {};  
+
     detalles.forEach(v => {
         const key = v.Articulo + "_" + v.PrecioUnitario;
 
@@ -661,13 +658,10 @@ async function exportarVentasExcel() {
         reporte[key].TotalVendido += Number(v.Cantidad) * Number(v.PrecioUnitario);
     });
 
-    // convertir agrupado en arreglo para Excel
     const reporteArr = Object.values(reporte);
 
-    // Calcular total general
     const totalGeneral = reporteArr.reduce((acc, r) => acc + r.TotalVendido, 0);
 
-    // Agregar fila "Total General"
     reporteArr.push({
         Articulo: "Total General",
         CantidadVendida: "",
@@ -678,16 +672,15 @@ async function exportarVentasExcel() {
     const hoja2 = XLSX.utils.json_to_sheet(reporteArr);
 
     /* ============================================
-        CREAR LIBRO EXCEL Y DESCARGAR
+        CREAR ARCHIVO
     =============================================*/
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, hoja1, "Registro de Ventas");
     XLSX.utils.book_append_sheet(wb, hoja2, "Reporte SAT");
 
-    XLSX.writeFile(wb, `Ventas_${year}_${mesTxt}.xlsx`);
+    XLSX.writeFile(wb, "Ventas_Filtradas.xlsx");
 }
 
-    
 
  /* ============================================================
    fin
