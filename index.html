@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -187,8 +187,8 @@ th, td {
     <h2>Purificadora REM</h2>
     <div class="btn-menu" onclick="loadSection('Dashboard')">Ventas</div>
     <div class="btn-menu" onclick="loadSection('Empleados')">Empleados</div>
-    <div class="btn-menu" onclick="loadSection('Productos')">Productos</div>
-    <div class="btn-menu">Cortes</div>
+    <div class="btn-menu" onclick="loadSection('Productos')">Productos</div>    
+    <div class="btn-menu" onclick="loadSection('Cortes')">Cortes</div>
     <div class="btn-menu">Inventario</div>
     <div class="btn-menu">Clientes</div>
 </div>
@@ -299,7 +299,26 @@ else if(section === "Productos") {
     // Cargar tablas de productos
     cargarProductos();
 }
+else if(section === "Cortes") {
+    view.innerHTML = `
+        <h1 class="title">Cortes de Venta</h1>
+        <div class="card">
+            <div id="controlCortes" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                <input type="date" id="fechaCorteInicio">
+                <input type="date" id="fechaCorteFin">
+                <button class="btnAction" onclick="cargarCortes()">Buscar</button>
+                <button class="btnAction" onclick="limpiarCortes()">Limpiar</button>
+                <button class="btnAction" onclick="exportarCortesExcel()">Exportar a Excel</button>
+            </div>
+            <div id="tablaCortes" style="overflow-x:auto; max-height:400px; overflow-y:auto;"></div>
+        </div>
+    `;
+}
 
+
+
+
+    
     
 }
 
@@ -934,10 +953,90 @@ function limpiarMovimientos() {
     movimientosFiltrados = [];
 }
 
+
+
+    let cortesFiltrados = []; // Para exportar y limpiar
+
+async function cargarCortes() {
+    const ini = document.getElementById("fechaCorteInicio").value;
+    const fin = document.getElementById("fechaCorteFin").value;
+
+    if(!ini || !fin) return alert("Selecciona ambas fechas");
+
+    const fIni = new Date(ini);
+    const fFin = new Date(fin);
+
+    // Determinar meses a cargar
+    let meses = [];
+    let y = fIni.getFullYear();
+    let m = fIni.getMonth() + 1;
+    const yFin = fFin.getFullYear();
+    const mFin = fFin.getMonth() + 1;
+
+    while(y < yFin || (y === yFin && m <= mFin)) {
+        meses.push({y, m});
+        m++;
+        if(m > 12){ m = 1; y++; }
+    }
+
+    let registros = [];
+    for(const mes of meses){
+        const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/CortesVenta/CortesVenta_${mes.y}_${String(mes.m).padStart(2,'0')}.json`;
+        try {
+            const r = await fetch(url);
+            if(r.ok) registros.push(...await r.json());
+        } catch{}
+    }
+
+    // Filtrar por rango exacto
+    const filtrados = registros.filter(r => {
+        const f = new Date(r.Fecha);
+        return f >= fIni && f <= fFin;
+    });
+
+    cortesFiltrados = filtrados; // guardar para exportar o limpiar
+
+    if(filtrados.length === 0){
+        document.getElementById("tablaCortes").innerHTML = "<p>No se encontraron cortes para este rango</p>";
+        return;
+    }
+
+    // Construir tabla dinámica mostrando todas las propiedades del JSON
+    let html = "<table><tr>";
+    Object.keys(filtrados[0]).forEach(k => html += `<th>${k}</th>`);
+    html += "</tr>";
+
+    filtrados.forEach(r => {
+        html += "<tr>";
+        Object.values(r).forEach(v => html += `<td>${v}</td>`);
+        html += "</tr>";
+    });
+
+    html += "</table>";
+    document.getElementById("tablaCortes").innerHTML = html;
+}
+
+
+function exportarCortesExcel() {
+    if(cortesFiltrados.length === 0) return alert("No hay registros para exportar");
+
+    const ws = XLSX.utils.json_to_sheet(cortesFiltrados);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Cortes");
+    XLSX.writeFile(wb, "Cortes.xlsx");
+}
+
+
+
+
+
     
      /* ============================================================
    fin
 ============================================================ */
+
+
+    
 </script>
 </body>
 </html>
