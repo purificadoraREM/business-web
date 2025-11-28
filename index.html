@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -642,37 +642,51 @@ function exportarAsistencias() {
     /* ============================================
         HOJA 2: REPORTE SAT
     =============================================*/
-    let reporte = {};  
 
-    detalles.forEach(v => {
-        const key = v.Articulo + "_" + v.PrecioUnitario;
 
-        if (!reporte[key]) {
-            reporte[key] = {
-                Articulo: v.Articulo,
-                CantidadVendida: 0,
-                PrecioUnitario: Number(v.PrecioUnitario),
-                TotalVendido: 0
-            };
-        }
+let reporte = {};  
 
-        reporte[key].CantidadVendida += Number(v.Cantidad);
-        reporte[key].TotalVendido += Number(v.Cantidad) * Number(v.PrecioUnitario);
-    });
+detalles.forEach(v => {
+    const key = v.Articulo + "_" + v.PrecioUnitario + "_" + v.Iva;
 
-    const reporteArr = Object.values(reporte);
+    if (!reporte[key]) {
+        reporte[key] = {
+            Articulo: v.Articulo,
+            CantidadVendida: 0,
+            PrecioUnitario: Number(v.PrecioUnitario),
+            Iva: 0,
+            TotalVendido: 0
+        };
+    }
 
-    const totalGeneral = reporteArr.reduce((acc, r) => acc + r.TotalVendido, 0);
+    // Sumar cantidad vendida
+    reporte[key].CantidadVendida += Number(v.Cantidad);
 
-    reporteArr.push({
-        Articulo: "Total General",
-        CantidadVendida: "",
-        PrecioUnitario: "",
-        TotalVendido: totalGeneral
-    });
+    // Sumar IVA directo del JSON
+    reporte[key].Iva += Number(v.Iva);
 
-    const hoja2 = XLSX.utils.json_to_sheet(reporteArr);
+    // Sumar Total directo del JSON
+    reporte[key].TotalVendido += Number(v.Total);
+});
 
+// Convertir objeto agrupado a arreglo
+const reporteArr = Object.values(reporte);
+
+// Total general (solo del TotalVendido)
+const totalGeneral = reporteArr.reduce((acc, r) => acc + r.TotalVendido, 0);
+
+// Agregar fila final
+reporteArr.push({
+    Articulo: "Total General",
+    CantidadVendida: "",
+    PrecioUnitario: "",
+    Iva: "",
+    TotalVendido: totalGeneral
+});
+
+const hoja2 = XLSX.utils.json_to_sheet(reporteArr);
+
+        
     /* ============================================
         CREAR ARCHIVO
     =============================================*/
