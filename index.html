@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -199,6 +199,7 @@ function loadSection(section) {
                     <input type="date" id="fechaInicio">
                     <input type="date" id="fechaFin">
                     <button class="btnAction" onclick="cargarPersonalizado()">Personalizado</button>
+                    <button class="btnAction" onclick="exportarVentasExcel()">Exportar Excel</button>
                     <div id="totalCard">
                         <span>Total Ventas</span>
                         <span id="totalValor">$0.00</span>
@@ -587,7 +588,7 @@ async function calcularPago() {
     document.getElementById("resultadoPago").innerHTML = html;
 }
 
-    /* ============================================================
+/* ============================================================
    exportar a excel
 ============================================================ */
 function exportarAsistencias() {
@@ -614,7 +615,81 @@ function exportarAsistencias() {
 }
 
 
-      /* ============================================================
+    /* ============================================================
+   exportar Venta a Excel
+============================================================ */
+async function exportarVentasExcel() {
+    const hoy = new Date(); 
+    const year = hoy.getFullYear();
+    const month = hoy.getMonth() + 1;
+    const mesTxt = String(month).padStart(2,"0");
+
+    // === Cargar Detalle del Mes completo ===
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${year}_${mesTxt}.json`;
+    let detalles = [];
+    try {
+        const r = await fetch(url);
+        if (r.ok) detalles = await r.json();
+    } catch {}
+
+    if (detalles.length === 0) {
+        return alert("No se encontraron registros para este mes.");
+    }
+
+    /* ============================================
+        HOJA 1: REGISTRO DE VENTAS COMPLETO
+    =============================================*/
+    const hoja1 = XLSX.utils.json_to_sheet(detalles);
+
+    /* ============================================
+        HOJA 2: REPORTE SAT
+    =============================================*/
+    let reporte = {};  
+    detalles.forEach(v => {
+        const key = v.Articulo + "_" + v.PrecioUnitario;
+
+        if (!reporte[key]) {
+            reporte[key] = {
+                Articulo: v.Articulo,
+                CantidadVendida: 0,
+                PrecioUnitario: Number(v.PrecioUnitario),
+                TotalVendido: 0
+            };
+        }
+
+        reporte[key].CantidadVendida += Number(v.Cantidad);
+        reporte[key].TotalVendido += Number(v.Cantidad) * Number(v.PrecioUnitario);
+    });
+
+    // convertir agrupado en arreglo para Excel
+    const reporteArr = Object.values(reporte);
+
+    // Calcular total general
+    const totalGeneral = reporteArr.reduce((acc, r) => acc + r.TotalVendido, 0);
+
+    // Agregar fila "Total General"
+    reporteArr.push({
+        Articulo: "Total General",
+        CantidadVendida: "",
+        PrecioUnitario: "",
+        TotalVendido: totalGeneral
+    });
+
+    const hoja2 = XLSX.utils.json_to_sheet(reporteArr);
+
+    /* ============================================
+        CREAR LIBRO EXCEL Y DESCARGAR
+    =============================================*/
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, hoja1, "Registro de Ventas");
+    XLSX.utils.book_append_sheet(wb, hoja2, "Reporte SAT");
+
+    XLSX.writeFile(wb, `Ventas_${year}_${mesTxt}.xlsx`);
+}
+
+    
+
+ /* ============================================================
    fin
 ============================================================ */
 </script>
