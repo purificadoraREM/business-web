@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -293,6 +293,7 @@ async function cargarHoy() {
     const hoyStr = fechaToString(hoy);
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
     const filtrado = datos.filter(v => v.Fecha === hoyStr);
+    const detalleHoy = await cargarDetalleHoy(hoy);
     registrosDetalleFiltrados = detalleHoy;
     dibujarBarras(filtrado, "hora", hoy, hoy);
     dibujarPastel(await cargarDetalleHoy(hoy));
@@ -304,6 +305,7 @@ async function cargarMes() {
     const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
     const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth()+1, 0);
     const datos = await cargarVentasPorMes(hoy.getFullYear(), hoy.getMonth()+1);
+    const detallesMes = await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth() + 1);
     registrosDetalleFiltrados = detallesMes;
     dibujarBarras(datos, "dia", primerDia, ultimoDia);
     dibujarPastel(await cargarDetallePorMes(hoy.getFullYear(), hoy.getMonth()+1));
