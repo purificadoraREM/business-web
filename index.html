@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
 :root {
     --card-bg: #ffffff;
@@ -218,11 +219,14 @@ function loadSection(section) {
             <h1 class="title">Empleados</h1>
             <div class="card">
                 <h2>Asistencias</h2>
-                <div id="controlEmpleado">
-                    <input type="date" id="fechaRegistro">
-                    <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
-                </div>
-                <div id="tablaRegistros"></div>
+    <div id="controlEmpleado">
+    <input type="date" id="fechaRegistroInicio">
+    <input type="date" id="fechaRegistroFin">
+    <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
+    <button class="btnAction" onclick="exportarAsistencias()">Exportar Excel</button>
+</div>
+<div id="tablaRegistros"></div>
+
             </div>
             <div class="card">
                 <h2>Calcular Pago</h2>
@@ -422,42 +426,63 @@ function calcularHoras(hEntrada, hSalida) {
     CARGAR REGISTROS EMPLEADOS
 ============================================================ */
 async function cargarRegistros() {
-    const fecha = document.getElementById("fechaRegistro").value;
-    if(!fecha) return alert("Selecciona una fecha");
+    const fechaIni = document.getElementById("fechaRegistroInicio").value;
+    const fechaFin = document.getElementById("fechaRegistroFin").value;
 
-    const [y,m,d] = fecha.split("-").map(Number);
-    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/RegEmpleados/RegEmpleados_${y}_${String(m).padStart(2,'0')}.json`;
+    if(!fechaIni || !fechaFin)
+        return alert("Selecciona ambas fechas");
+
+    const fi = new Date(fechaIni);
+    const ff = new Date(fechaFin);
+
+    // obtener meses a cargar
+    let meses = [];
+    let y = fi.getFullYear();
+    let m = fi.getMonth() + 1;
+    const yFin = ff.getFullYear();
+    const mFin = ff.getMonth() + 1;
+
+    while (y < yFin || (y === yFin && m <= mFin)) {
+        meses.push({y, m});
+        m++;
+        if(m > 12){ m = 1; y++; }
+    }
 
     let registros = [];
-    try { 
-        const r = await fetch(url); 
-        if(r.ok) registros = await r.json(); 
-    } 
-    catch {}
+    for (const mes of meses) {
+        const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/RegEmpleados/RegEmpleados_${mes.y}_${String(mes.m).padStart(2,'0')}.json`;
+        try {
+            const r = await fetch(url);
+            if(r.ok) registros.push(...await r.json());
+        } catch {}
+    }
 
-    const filtrados = registros.filter(e => e.Fecha === fecha);
+    const filtrados = registros.filter(r => {
+        const f = new Date(r.Fecha);
+        return f >= fi && f <= ff;
+    });
+
+    window.registrosFiltradosExport = filtrados; // guardar para exportar
 
     let html = `
         <table>
             <tr>
                 <th>Empleado</th>
+                <th>Fecha</th>
                 <th>Entrada</th>
                 <th>Salida</th>
-                <th>Horas Trabajadas</th>
+                <th>Horas trabajadas</th>
             </tr>
     `;
 
     filtrados.forEach(e => {
         const calc = calcularHoras(e.HoraEntrada, e.HoraSalida);
-
-        let horasTxt = "—";
-        if(calc.horas !== null) {
-            horasTxt = `${calc.horas}:${String(calc.minutos).padStart(2,'0')}`;
-        }
+        const horasTxt = calc.horas === null ? "—" : `${calc.horas}:${String(calc.minutos).padStart(2,'0')}`;
 
         html += `
             <tr>
                 <td>${e.Nombre}</td>
+                <td>${e.Fecha}</td>
                 <td>${e.HoraEntrada}</td>
                 <td>${e.HoraSalida ?? "NULL"}</td>
                 <td>${horasTxt}</td>
@@ -468,6 +493,7 @@ async function cargarRegistros() {
     html += "</table>";
     document.getElementById("tablaRegistros").innerHTML = html;
 }
+
 
     /* ============================================================
     CALCULAR PAGO EMPLEADOS
@@ -562,9 +588,35 @@ async function calcularPago() {
 }
 
     /* ============================================================
+   exportar a excel
+============================================================ */
+function exportarAsistencias() {
+    if (!window.registrosFiltradosExport || window.registrosFiltradosExport.length === 0) {
+        return alert("No hay datos para exportar");
+    }
+
+    const data = window.registrosFiltradosExport.map(r => {
+        const calc = calcularHoras(r.HoraEntrada, r.HoraSalida);
+        return {
+            "Empleado": r.Nombre,
+            "Fecha": r.Fecha,
+            "Entrada": r.HoraEntrada,
+            "Salida": r.HoraSalida ?? "NULL",
+            "Horas trabajadas": calc.horas === null ? "—" : `${calc.horas}:${String(calc.minutos).padStart(2,'0')}`
+        };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Asistencias");
+
+    XLSX.writeFile(wb, "Asistencias.xlsx");
+}
+
+
+      /* ============================================================
    fin
 ============================================================ */
-
 </script>
 </body>
 </html>
