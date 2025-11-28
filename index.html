@@ -178,20 +178,86 @@ th, td {
     background-color: #fafafa;
 }
 
+    /* Botón de menú móvil */
+#mobileMenuBtn {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    font-size: 28px;
+    background: #1a73e8;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    z-index: 9999;
+    cursor: pointer;
+}
+
+/* Estilos solo para pantallas pequeñas */
+@media (max-width: 768px) {
+
+    #mobileMenuBtn {
+        display: block;
+    }
+
+    /* Ocultar menú por defecto */
+    #sidebar {
+        position: fixed;
+        top: 0;
+        left: -260px;
+        width: 250px;
+        height: 100vh;
+        background: #ffffff;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+        padding-top: 60px;
+        transition: left .3s ease;
+        z-index: 9990;
+    }
+
+    /* Cuando está abierto */
+    #sidebar.open {
+        left: 0;
+    }
+
+    /* Oscurecer fondo cuando el menú esté abierto */
+    #overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.4);
+        z-index: 9980;
+    }
+
+    #overlay.show {
+        display: block;
+    }
+
+    /* El contenido se hace más pequeño */
+    #view {
+        margin-left: 0 !important;
+        padding: 20px;
+    }
+}
+
+
     
 </style>
 </head>
 <body>
-    
+    <div id="mobileMenuBtn" onclick="toggleMenu()">☰</div>    
 <div class="sidebar" id="sidebar">
-    <h2>Purificadora REM</h2>
-    <div class="btn-menu" onclick="loadSection('Dashboard')">Ventas</div>
-    <div class="btn-menu" onclick="loadSection('Empleados')">Empleados</div>
-    <div class="btn-menu" onclick="loadSection('Productos')">Productos</div>    
-    <div class="btn-menu" onclick="loadSection('Cortes')">Cortes</div>
+    <h2>Purificadora REM</h2>    
+    <div class="btn-menu" onclick="loadSection('Dashboard'); toggleMenu();">Ventas</div>
+    <div class="btn-menu" onclick="loadSection('Empleados'); toggleMenu();">Empleados</div>
+    <div class="btn-menu" onclick="loadSection('Productos'); toggleMenu();">Productos</div>    
+    <div class="btn-menu" onclick="loadSection('Cortes'); toggleMenu();">Cortes</div>
     <div class="btn-menu">Inventario</div>
     <div class="btn-menu">Clientes</div>
 </div>
+<div id="overlay" onclick="toggleMenu()"></div>
 
 <div class="content">
     <div id="view" class="card">
@@ -1042,6 +1108,16 @@ function limpiarCortes() {
     if(tabla) tabla.innerHTML = "<p>Búsqueda limpia. Selecciona fechas para cargar cortes.</p>";
 }
 
+
+
+
+    function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    sidebar.classList.toggle("open");
+    overlay.classList.toggle("show");
+}
 
 
     
