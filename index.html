@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -270,8 +270,9 @@ th, td {
     <div class="btn-menu" onclick="loadSection('Empleados'); toggleMenu();">Empleados</div>
     <div class="btn-menu" onclick="loadSection('Productos'); toggleMenu();">Productos</div>    
     <div class="btn-menu" onclick="loadSection('Cortes'); toggleMenu();">Cortes</div>
-    <div class="btn-menu">Inventario</div>    
     <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>
+    <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>
+    <div class="btn-menu" onclick="loadSection('Inventario'); toggleMenu();">Inventario</div>    
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
 
@@ -433,7 +434,23 @@ else if(section === "Clientes") {
     cargarClientes();
 }
 
-    
+    else if(section === "Inventario") {
+    view.innerHTML = `
+        <h1 class="title">Inventario</h1>
+
+        <div class="card">
+            <h2>Movimientos de Inventario</h2>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                <input type="date" id="fechaInvInicio">
+                <input type="date" id="fechaInvFin">
+                <button class="btnAction" onclick="cargarInventario()">Buscar</button>
+            </div>
+
+            <div id="tablaInventario" style="max-height:400px; overflow-y:auto; overflow-x:auto;"></div>
+        </div>
+    `;
+}
     }
 
 
@@ -1332,12 +1349,81 @@ async function mostrarHistorialCliente(nombreCliente) {
     panel.innerHTML = html;
 }
 
+    /* ============================================================
+   CARGAR INVENTARIO
+============================================================ */
+async function cargarInventario() {
+    const cont = document.getElementById("tablaInventario");
+    cont.innerHTML = "<p>Cargando datos...</p>";
+
+    const inicio = document.getElementById("fechaInvInicio").value || "2000-01-01";
+    const fin = document.getElementById("fechaInvFin").value || "2100-01-01";
+
+    const fechaIni = new Date(inicio);
+    const fechaFin = new Date(fin);
+
+    const hoy = new Date();
+    const yearActual = hoy.getFullYear();
+    const yearAnterior = yearActual - 1;
+
+    let movimientos = [];
+
+    // Cargar año anterior y actual
+    for (let y of [yearAnterior, yearActual]) {
+        for (let m = 1; m <= 12; m++) {
+            const mes = String(m).padStart(2, '0');
+            const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/AjustesInventario/AjustesInventario_${y}_${mes}.json`;
+
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    const dataMes = await res.json();
+                    movimientos.push(...dataMes);
+                }
+            } catch (e) {}
+        }
+    }
+
+    // Filtrar por rango de fecha
+    movimientos = movimientos.filter(m => {
+        const f = new Date(m.Fecha);
+        return f >= fechaIni && f <= fechaFin;
+    });
+
+    // Construir tabla
+    let html = `
+        <table>
+            <tr>
+                <th>AjusteID</th>
+                <th>ProductoID</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Motivo</th>
+                <th>Fecha</th>
+                <th>Usuario</th>
+            </tr>
+    `;
+
+    movimientos.forEach(m => {
+        html += `
+            <tr>
+                <td>${m.AjusteID}</td>
+                <td>${m.ProductoID}</td>
+                <td>${m.Tipo}</td>
+                <td>${m.CantidadAjustada}</td>
+                <td>${m.Motivo}</td>
+                <td>${m.Fecha}</td>
+                <td>${m.Usuario}</td>
+            </tr>
+        `;
+    });
+
+    html += "</table>";
+    cont.innerHTML = html;
+}
 /* ============================================================
    fin
-============================================================ */
-
-    
-</script>
-    
+============================================================ */    
+</script>    
 </body>
 </html>
