@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -259,21 +259,11 @@ th, td {
         margin-left: 0 !important;
         padding: 20px;
     }
-}
-
-
-    
+}    
 </style>
 </head>
 <body>
-
-
-
-    
-
-
-    
-    <div id="mobileMenuBtn" onclick="toggleMenu()">☰</div>    
+<div id="mobileMenuBtn" onclick="toggleMenu()">☰</div>    
 <div class="sidebar" id="sidebar">
     <h2>Purificadora REM</h2>    
     <div class="btn-menu" onclick="loadSection('Dashboard'); toggleMenu();">Ventas</div>
@@ -289,15 +279,6 @@ th, td {
     <div id="view" class="card">
         <h1>Bienvenido</h1>
         <p>Selecciona una opción del menú.</p>        
-    </div>
-</div>
-
-
-    <!-- MODAL HISTORIAL -->
-<div id="modalHistorial" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); overflow:auto; z-index:9999;">
-    <div style="background:white; margin:50px auto; padding:20px; border-radius:10px; width:90%; max-width:800px;">
-        <span onclick="cerrarHistorial()" style="cursor:pointer; float:right; font-size:20px; font-weight:bold;">&times;</span>
-        <div id="contenidoHistorialModal"></div>
     </div>
 </div>
 
@@ -436,23 +417,7 @@ else if(section === "Clientes") {
                 ">
             </div>
 
-            <!-- HISTORIAL DEL CLIENTE -->
-            <div id="historialCliente"
-                style="
-                    flex:2;
-                    min-width:300px;
-                    max-height:450px;
-                    overflow-y:auto;
-                    border: 1px solid #ccc;
-                    padding: 10px;
-                    border-radius: 8px;
-                ">
-                <div id="contenidoHistorial">
-                    <p>Selecciona un cliente para ver su historial.</p>
-                </div>
-            </div>
-        </div>
-    `;
+   // `;
 
     // Cargar los clientes en la lista
     cargarClientes();
@@ -1259,51 +1224,6 @@ async function cargarClientes() {
 }
 
 /* ============================================================
-   MOSTRAR HISTORIAL DEL CLIENTE
-============================================================ */
-// Función para mostrar historial
-async function mostrarHistorialCliente(nombreCliente) {
-    // Cargar historial igual que antes...
-    const historial = await obtenerHistorial(nombreCliente); // tu función que devuelve los datos
-
-    // Calcular total gastado
-    const totalGastado = historial.reduce((acc, v) => acc + Number(v.Total), 0);
-
-    let html = `
-        <h2 style="display:inline-block;">Historial de: ${nombreCliente}</h2>
-        <div style="float:right; background:#00AEEF; color:white; padding:8px 12px; border-radius:5px; font-weight:bold;">
-            Total Gastado: $${totalGastado.toFixed(2)}
-        </div>
-        <table style="width:100%; margin-top:20px;">
-            <tr>
-                <th>Fecha</th>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Total</th>
-            </tr>
-    `;
-    historial.forEach(v => {
-        html += `
-            <tr>
-                <td>${v.Fecha}</td>
-                <td>${v.Articulo}</td>
-                <td>${v.Cantidad}</td>
-                <td>${v.Total}</td>
-            </tr>
-        `;
-    });
-    html += "</table>";
-
-    document.getElementById("contenidoHistorial").innerHTML = html;
-    document.getElementById("modalHistorial").style.display = "block";
-}
-
-// Función para cerrar modal
-function cerrarHistorial() {
-    document.getElementById("modalHistorial").style.display = "none";
-}
-
-        /* ============================================================
    fin
 ============================================================ */
 
