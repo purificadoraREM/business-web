@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1153,7 +1153,6 @@ function limpiarCortes() {
      /* ============================================================
    cargar clientes
 ============================================================ */
-
 async function cargarClientes() {
     // Obtener año actual y año anterior
     const hoy = new Date();
@@ -1184,6 +1183,16 @@ async function cargarClientes() {
 
     datos.forEach(v => {
         const cliente = v.Cliente?.trim() || "Sin nombre";
+
+        // ❌ Filtrar clientes no deseados
+        if (
+            cliente === "N/A" ||
+            cliente === "Ningún Cliente Seleccionado" ||
+            cliente === "" ||
+            cliente === "-" 
+        ) {
+            return; // ← saltar este registro
+        }
 
         if (!clientes[cliente]) {
             clientes[cliente] = v.Fecha;
