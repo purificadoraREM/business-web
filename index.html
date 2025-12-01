@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1153,8 +1153,9 @@ function limpiarCortes() {
 
 //<div id="contenedorClientes"></div>
 //<div id="historialCliente"></div>
-
-
+<div id="historialCliente" class="card" style="flex:2; min-width:300px;">
+    <h2>Selecciona un cliente para ver su historial</h2>
+</div>
  
 /* ============================================================
    CARGAR CLIENTES
@@ -1220,10 +1221,90 @@ async function cargarClientes() {
     document.getElementById("contenedorClientes").innerHTML = html;
 }
 
+
+/* ============================================================
+   MOSTRAR HISTORIAL DE UN CLIENTE (NUEVO)
+============================================================ */
+async function mostrarHistorialCliente(nombreCliente) {
+
+    // Crear contenedor si no existe
+    let panel = document.getElementById("historialCliente");
+    if (!panel) {
+        const view = document.getElementById("view");
+        const div = document.createElement("div");
+        div.id = "historialCliente";
+        div.className = "card";
+        view.appendChild(div);
+        panel = div;
+    }
+
+    panel.innerHTML = `<h2>Historial de ${nombreCliente}</h2><p>Cargando...</p>`;
+
+    // Cargar datos igual que cargarClientes()
+    const hoy = new Date();
+    const yearActual = hoy.getFullYear();
+    const yearAnterior = yearActual - 1;
+
+    let datos = [];
+
+    for (let y of [yearAnterior, yearActual]) {
+        for (let m = 1; m <= 12; m++) {
+            const mes = String(m).padStart(2, '0');
+            const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${y}_${mes}.json`;
+
+            try {
+                const res = await fetch(url);
+                if(res.ok){
+                    const dataMes = await res.json();
+                    datos.push(...dataMes);
+                }
+            } catch {}
+        }
+    }
+
+    // Filtrar historial de ese cliente
+    const historial = datos.filter(v => v.Cliente?.trim() === nombreCliente);
+
+    if(historial.length === 0){
+        panel.innerHTML = `
+            <h2>Historial de ${nombreCliente}</h2>
+            <p>No tiene compras registradas.</p>
+        `;
+        return;
+    }
+
+    // Ordenar por fecha descendente
+    historial.sort((a,b)=> b.Fecha.localeCompare(a.Fecha));
+
+    let html = `
+        <h2>Historial de ${nombreCliente}</h2>
+        <table style="width:100%;">
+            <tr>
+                <th>Fecha</th>
+                <th>Artículo</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+            </tr>
+    `;
+
+    historial.forEach(h => {
+        html += `
+            <tr>
+                <td>${h.Fecha}</td>
+                <td>${h.Articulo}</td>
+                <td>${h.Cantidad}</td>
+                <td>$${Number(h.Total).toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    html += "</table>";
+
+    panel.innerHTML = html;
+}
 /* ============================================================
    fin
 ============================================================ */
-
 
     
 </script>
