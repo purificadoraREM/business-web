@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -441,16 +441,14 @@ else if(section === "Clientes") {
         <div class="card">
             <h2>Movimientos de Inventario</h2>
 
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                <input type="date" id="fechaInvInicio">
-                <input type="date" id="fechaInvFin">
-                <button class="btnAction" onclick="cargarInventario()">Buscar</button>
-            </div>
-
-            <div id="tablaInventario" style="max-height:400px; overflow-y:auto; overflow-x:auto;"></div>
+            <div id="tablaInventario" style="max-height:500px; overflow-y:auto; overflow-x:auto;"></div>
         </div>
     `;
+
+    // Cargar automáticamente al mostrar la sección
+    cargarInventario();
 }
+
     }
 
 
@@ -1356,19 +1354,13 @@ async function cargarInventario() {
     const cont = document.getElementById("tablaInventario");
     cont.innerHTML = "<p>Cargando datos...</p>";
 
-    const inicio = document.getElementById("fechaInvInicio").value || "2000-01-01";
-    const fin = document.getElementById("fechaInvFin").value || "2100-01-01";
-
-    const fechaIni = new Date(inicio);
-    const fechaFin = new Date(fin);
-
     const hoy = new Date();
     const yearActual = hoy.getFullYear();
     const yearAnterior = yearActual - 1;
 
     let movimientos = [];
 
-    // Cargar año anterior y actual
+    // Cargar archivos de inventario de año anterior y actual
     for (let y of [yearAnterior, yearActual]) {
         for (let m = 1; m <= 12; m++) {
             const mes = String(m).padStart(2, '0');
@@ -1380,15 +1372,11 @@ async function cargarInventario() {
                     const dataMes = await res.json();
                     movimientos.push(...dataMes);
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn(`No se pudo cargar el archivo ${url}`);
+            }
         }
     }
-
-    // Filtrar por rango de fecha
-    movimientos = movimientos.filter(m => {
-        const f = new Date(m.Fecha);
-        return f >= fechaIni && f <= fechaFin;
-    });
 
     // Construir tabla
     let html = `
@@ -1421,6 +1409,7 @@ async function cargarInventario() {
     html += "</table>";
     cont.innerHTML = html;
 }
+
 /* ============================================================
    fin
 ============================================================ */    
