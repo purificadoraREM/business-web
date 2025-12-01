@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -266,6 +266,25 @@ th, td {
 </style>
 </head>
 <body>
+
+
+
+    <h1>Clientes</h1>
+
+    <!-- Contenedor donde se listan los clientes -->
+    <div id="contenedorClientes"></div>
+
+    <!-- Modal de historial (flotante) -->
+    <div id="modalHistorial" style="display:none; position:fixed; top:50px; right:50px; width:500px; max-height:70%; overflow:auto; background:white; border:1px solid #ccc; padding:15px; box-shadow:0 5px 15px rgba(0,0,0,0.3); border-radius:8px; z-index:1000;">
+        <button onclick="cerrarHistorial()" style="float:right; background:#007bff; color:white; border:none; border-radius:5px; padding:5px 10px;">Cerrar</button>
+        <div id="contenidoHistorial"></div>
+    </div>
+
+    <!-- Tu script JS al final del body -->
+    <script src="clientes.js"></script>
+
+
+    
     <div id="mobileMenuBtn" onclick="toggleMenu()">☰</div>    
 <div class="sidebar" id="sidebar">
     <h2>Purificadora REM</h2>    
@@ -1233,57 +1252,28 @@ async function cargarClientes() {
 /* ============================================================
    MOSTRAR HISTORIAL DEL CLIENTE
 ============================================================ */
-window.mostrarHistorialCliente = async function(nombreCliente) {
-    const hoy = new Date();
-    const yearActual = hoy.getFullYear();
-    const yearAnterior = yearActual - 1;
-
-    let datos = [];
-
-    for (let y of [yearAnterior, yearActual]) {
-        for (let m = 1; m <= 12; m++) {
-            const mes = String(m).padStart(2,'0');
-            const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${y}_${mes}.json`;
-            try {
-                const res = await fetch(url);
-                if(res.ok){
-                    const dataMes = await res.json();
-                    datos.push(...dataMes);
-                }
-            } catch {}
-        }
-    }
-
-    const historial = datos.filter(v => v.Cliente?.trim() === nombreCliente);
-    historial.sort((a,b) => b.Fecha.localeCompare(a.Fecha));
+// Función para mostrar historial
+async function mostrarHistorialCliente(nombreCliente) {
+    // Cargar historial igual que antes...
+    const historial = await obtenerHistorial(nombreCliente); // tu función que devuelve los datos
 
     // Calcular total gastado
-    const totalGastado = historial.reduce((acc,v)=>acc + Number(v.Total||0), 0);
+    const totalGastado = historial.reduce((acc, v) => acc + Number(v.Total), 0);
 
     let html = `
-        <div class="card" style="margin-bottom:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <button onclick="cargarClientes()" 
-                    style="padding:8px 14px; background:#007bff; color:white; border:none; border-radius:5px;">
-                    ← Volver a Clientes
-                </button>
-                <div style="background:#00AEEF; color:white; padding:8px 12px; border-radius:5px; font-weight:bold;">
-                    Total Gastado: $${totalGastado.toFixed(2)}
-                </div>
-            </div>
-
-            <h2>Historial de: ${nombreCliente}</h2>
-
-            <table>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Total</th>
-                </tr>
+        <h2 style="display:inline-block;">Historial de: ${nombreCliente}</h2>
+        <div style="float:right; background:#00AEEF; color:white; padding:8px 12px; border-radius:5px; font-weight:bold;">
+            Total Gastado: $${totalGastado.toFixed(2)}
+        </div>
+        <table style="width:100%; margin-top:20px;">
+            <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+            </tr>
     `;
-
-    historial.forEach(v=>{
+    historial.forEach(v => {
         html += `
             <tr>
                 <td>${v.Fecha}</td>
@@ -1293,11 +1283,15 @@ window.mostrarHistorialCliente = async function(nombreCliente) {
             </tr>
         `;
     });
+    html += "</table>";
 
-    html += `</table></div>`;
+    document.getElementById("contenidoHistorial").innerHTML = html;
+    document.getElementById("modalHistorial").style.display = "block";
+}
 
-    document.getElementById("contenedorClientes").innerHTML = "";
-    document.getElementById("historialCliente").innerHTML = html;
+// Función para cerrar modal
+function cerrarHistorial() {
+    document.getElementById("modalHistorial").style.display = "none";
 }
 
         /* ============================================================
