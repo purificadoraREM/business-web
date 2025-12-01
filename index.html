@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -400,6 +400,7 @@ else if(section === "Clientes") {
         <h1 class="title">Clientes</h1>
 
         <div class="card" style="display:flex; gap:20px; flex-wrap:wrap;">
+
             <!-- LISTA DE CLIENTES -->
             <div id="contenedorClientes"
                 style="
@@ -414,11 +415,25 @@ else if(section === "Clientes") {
                 ">
             </div>
 
+            <!-- HISTORIAL DEL CLIENTE -->
+            <div id="historialCliente"
+                class="card"
+                style="
+                    flex:2;
+                    min-width:300px;
+                    max-height:450px;
+                    overflow-y:auto;
+                ">
+                <h2>Selecciona un cliente para ver su historial</h2>
+            </div>
+
+        </div>
     `;
 
-    // Cargar los clientes en la lista
     cargarClientes();
-}   
+}
+
+    
     }
 
 
@@ -1151,11 +1166,7 @@ function limpiarCortes() {
     overlay.classList.toggle("show");
 }
 
-//<div id="contenedorClientes"></div>
-//<div id="historialCliente"></div>
-<div id="historialCliente" class="card" style="flex:2; min-width:300px;">
-    <h2>Selecciona un cliente para ver su historial</h2>
-</div>
+
  
 /* ============================================================
    CARGAR CLIENTES
