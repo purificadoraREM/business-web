@@ -1155,21 +1155,20 @@ function limpiarCortes() {
 ============================================================ */
 
 async function cargarClientes() {
-    // Obtener año actual y año anterior (por seguridad)
+    // Obtener año actual y año anterior
     const hoy = new Date();
     const yearActual = hoy.getFullYear();
     const yearAnterior = yearActual - 1;
 
-    // Meses del 1 al 12
     let meses = Array.from({length: 12}, (_, i) => i + 1);
-
     let datos = [];
 
-    // Cargar año actual y anterior (para asegurarnos que tome últimos registros)
+    // Cargar ventas detalle de los últimos 24 meses
     for (let y of [yearAnterior, yearActual]) {
         for (let m of meses) {
             const mes = String(m).padStart(2, '0');
             const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${y}_${mes}.json`;
+
             try {
                 const res = await fetch(url);
                 if (res.ok) {
@@ -1180,7 +1179,7 @@ async function cargarClientes() {
         }
     }
 
-    // Agrupar clientes para obtener ÚLTIMA FECHA DE COMPRA
+    // Agrupar clientes y obtener su última compra
     let clientes = {};
 
     datos.forEach(v => {
@@ -1189,14 +1188,13 @@ async function cargarClientes() {
         if (!clientes[cliente]) {
             clientes[cliente] = v.Fecha;
         } else {
-            // Guardar solo la fecha más reciente
             if (v.Fecha > clientes[cliente]) {
                 clientes[cliente] = v.Fecha;
             }
         }
     });
 
-    // Convertir a tabla
+    // Crear tabla
     let html = `
         <table>
             <tr>
@@ -1205,14 +1203,20 @@ async function cargarClientes() {
             </tr>
     `;
 
-    for (let cli in clientes) {
+    // ORDENAR ASCENDENTE → de la fecha más antigua a la más reciente
+    let listaOrdenada = Object.entries(clientes).sort((a, b) => {
+        return a[1].localeCompare(b[1]);
+    });
+
+    // Insertar filas
+    listaOrdenada.forEach(([cliente, fecha]) => {
         html += `
             <tr>
-                <td>${cli}</td>
-                <td>${clientes[cli]}</td>
+                <td>${cliente}</td>
+                <td>${fecha}</td>
             </tr>
         `;
-    }
+    });
 
     html += "</table>";
 
