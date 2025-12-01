@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -269,19 +269,7 @@ th, td {
 
 
 
-    <h1>Clientes</h1>
-
-    <!-- Contenedor donde se listan los clientes -->
-    <div id="contenedorClientes"></div>
-
-    <!-- Modal de historial (flotante) -->
-    <div id="modalHistorial" style="display:none; position:fixed; top:50px; right:50px; width:500px; max-height:70%; overflow:auto; background:white; border:1px solid #ccc; padding:15px; box-shadow:0 5px 15px rgba(0,0,0,0.3); border-radius:8px; z-index:1000;">
-        <button onclick="cerrarHistorial()" style="float:right; background:#007bff; color:white; border:none; border-radius:5px; padding:5px 10px;">Cerrar</button>
-        <div id="contenidoHistorial"></div>
-    </div>
-
-    <!-- Tu script JS al final del body -->
-    <script src="clientes.js"></script>
+    
 
 
     
@@ -301,9 +289,38 @@ th, td {
     <div id="view" class="card">
         <h1>Bienvenido</h1>
         <p>Selecciona una opción del menú.</p>
+
+        
     </div>
 </div>
+    
 
+
+    <!-- SECCIÓN CLIENTES -->
+    <div class="card" style="display:flex; gap:20px; flex-wrap:wrap;">
+        <!-- LISTA DE CLIENTES -->
+        <div id="contenedorClientes" style="flex:1; min-width:250px; max-width:400px; max-height:450px; overflow-y:auto; border:1px solid #ccc; padding:10px; border-radius:8px;"></div>
+
+        <!-- HISTORIAL DEL CLIENTE -->
+        <div id="historialCliente" style="flex:2; min-width:300px; max-height:450px; overflow-y:auto; border:1px solid #ccc; padding:10px; border-radius:8px;">
+            <div id="contenidoHistorial">
+                <p>Selecciona un cliente para ver su historial.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIAL -->
+    <div id="modalHistorial" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); overflow:auto; z-index:9999;">
+        <div style="background:white; margin:50px auto; padding:20px; border-radius:10px; width:90%; max-width:800px;">
+            <span onclick="cerrarHistorial()" style="cursor:pointer; float:right; font-size:20px; font-weight:bold;">&times;</span>
+            <div id="contenidoHistorial"></div>
+        </div>
+    </div>
+
+
+
+
+    
 <script>
 let barChart = null;
 let pieChart = null;
