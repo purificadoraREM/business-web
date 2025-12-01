@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM10</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1263,7 +1263,7 @@ async function cargarClientes() {
    mostrar historial
 ============================================================ */
 
-    async function mostrarHistorialCliente(nombreCliente) {
+   async function mostrarHistorialCliente(nombreCliente) {
 
     // Cargar datos igual que antes
     const hoy = new Date();
@@ -1291,7 +1291,7 @@ async function cargarClientes() {
     // Filtrar solo el historial del cliente
     const historial = datos.filter(v => v.Cliente?.trim() === nombreCliente);
 
-    // Ordenar por fecha descendente (último primero)
+    // Ordenar por fecha DESC (más reciente primero)
     historial.sort((a, b) => b.Fecha.localeCompare(a.Fecha));
 
     // Construir tabla del historial
@@ -1317,7 +1317,7 @@ async function cargarClientes() {
         html += `
             <tr>
                 <td>${v.Fecha}</td>
-                <td>${v.Producto}</td>
+                <td>${v.Articulo}</td>
                 <td>${v.Cantidad}</td>
                 <td>${v.Total}</td>
             </tr>
@@ -1330,6 +1330,7 @@ async function cargarClientes() {
     document.getElementById("contenedorClientes").innerHTML = "";
     document.getElementById("historialCliente").innerHTML = html;
 }
+
 
         /* ============================================================
    fin
