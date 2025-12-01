@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -288,20 +288,11 @@ th, td {
 <div class="content">
     <div id="view" class="card">
         <h1>Bienvenido</h1>
-        <p>Selecciona una opción del menú.</p>        
+        <p>Selecciona una opción del menú.</p>
+
+        
     </div>
 </div>
-
-
-    <!-- MODAL HISTORIAL -->
-<div id="modalHistorial" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); overflow:auto; z-index:9999;">
-    <div style="background:white; margin:50px auto; padding:20px; border-radius:10px; width:90%; max-width:800px;">
-        <span onclick="cerrarHistorial()" style="cursor:pointer; float:right; font-size:20px; font-weight:bold;">&times;</span>
-        <div id="contenidoHistorialModal"></div>
-    </div>
-</div>
-
-
     
 <script>
 let barChart = null;
@@ -459,6 +450,13 @@ else if(section === "Clientes") {
 }   
     }
 
+<!-- MODAL HISTORIAL -->
+<div id="modalHistorial" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); overflow:auto; z-index:9999;">
+    <div style="background:white; margin:50px auto; padding:20px; border-radius:10px; width:90%; max-width:800px;">
+        <span onclick="cerrarHistorial()" style="cursor:pointer; float:right; font-size:20px; font-weight:bold;">&times;</span>
+        <div id="contenidoHistorialModal"></div>
+    </div>
+</div>
 
     
 /* ============================================================
