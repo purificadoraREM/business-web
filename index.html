@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1161,29 +1161,27 @@ function limpiarCortes() {
     overlay.classList.toggle("show");
 }
 
+<div id="contenedorClientes"></div>
+<div id="historialCliente"></div>
 
-    
-     /* ============================================================
-   cargar clientes
+<script>
+/* ============================================================
+   CARGAR CLIENTES
 ============================================================ */
 async function cargarClientes() {
-    // Obtener año actual y año anterior
     const hoy = new Date();
     const yearActual = hoy.getFullYear();
     const yearAnterior = yearActual - 1;
 
-    let meses = Array.from({length: 12}, (_, i) => i + 1);
     let datos = [];
 
-    // Cargar ventas detalle de los últimos 24 meses
     for (let y of [yearAnterior, yearActual]) {
-        for (let m of meses) {
+        for (let m = 1; m <= 12; m++) {
             const mes = String(m).padStart(2, '0');
             const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${y}_${mes}.json`;
-
             try {
                 const res = await fetch(url);
-                if (res.ok) {
+                if(res.ok){
                     const dataMes = await res.json();
                     datos.push(...dataMes);
                 }
@@ -1191,33 +1189,17 @@ async function cargarClientes() {
         }
     }
 
-    // Agrupar clientes y obtener su última compra
     let clientes = {};
 
     datos.forEach(v => {
         const cliente = v.Cliente?.trim() || "Sin nombre";
+        if(["N/A","Ningún Cliente Seleccionado","","-"].includes(cliente)) return;
 
-        // ❌ Filtrar clientes no deseados
-        if (
-            cliente === "N/A" ||
-            cliente === "Ningún Cliente Seleccionado" ||
-            cliente === "" ||
-            cliente === "-"
-        ) {
-            return;
-        }
-
-        // Guardar la fecha más reciente
-        if (!clientes[cliente]) {
+        if(!clientes[cliente] || v.Fecha > clientes[cliente]){
             clientes[cliente] = v.Fecha;
-        } else {
-            if (v.Fecha > clientes[cliente]) {
-                clientes[cliente] = v.Fecha;
-            }
         }
     });
 
-    // Convertir en tabla
     let html = `
         <table style="width:100%;">
             <tr>
@@ -1226,21 +1208,13 @@ async function cargarClientes() {
             </tr>
     `;
 
-    // ORDENAR ASCENDENTE (más viejo → más reciente)
-    let listaOrdenada = Object.entries(clientes).sort((a, b) => {
-        return a[1].localeCompare(b[1]);
-    });
+    // Ordenar por fecha ascendente
+    const listaOrdenada = Object.entries(clientes).sort((a,b)=>a[1].localeCompare(b[1]));
 
-    // Fecha de hoy
     const hoyISO = new Date().toISOString().split("T")[0];
 
-    // Llenar filas
-    listaOrdenada.forEach(([cliente, fecha]) => {
-
-        // calcular días sin comprar
-        const diasSinComprar =
-            (new Date(hoyISO) - new Date(fecha)) / (1000 * 60 * 60 * 24);
-
+    listaOrdenada.forEach(([cliente, fecha])=>{
+        const diasSinComprar = (new Date(hoyISO) - new Date(fecha)) / (1000*60*60*24);
         const styleRojo = diasSinComprar >= 7 ? "color:red;font-weight:bold;" : "";
 
         html += `
@@ -1252,34 +1226,26 @@ async function cargarClientes() {
     });
 
     html += "</table>";
-
     document.getElementById("contenedorClientes").innerHTML = html;
 }
 
-
-    
-      
-     /* ============================================================
-   mostrar historial
+/* ============================================================
+   MOSTRAR HISTORIAL DEL CLIENTE
 ============================================================ */
-
-  async function mostrarHistorialCliente(nombreCliente) {
-    // Cargar datos igual que antes
+window.mostrarHistorialCliente = async function(nombreCliente) {
     const hoy = new Date();
     const yearActual = hoy.getFullYear();
     const yearAnterior = yearActual - 1;
 
-    let meses = Array.from({length: 12}, (_, i) => i + 1);
     let datos = [];
 
     for (let y of [yearAnterior, yearActual]) {
-        for (let m of meses) {
-            const mes = String(m).padStart(2, '0');
+        for (let m = 1; m <= 12; m++) {
+            const mes = String(m).padStart(2,'0');
             const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${y}_${mes}.json`;
-
             try {
                 const res = await fetch(url);
-                if (res.ok) {
+                if(res.ok){
                     const dataMes = await res.json();
                     datos.push(...dataMes);
                 }
@@ -1287,34 +1253,36 @@ async function cargarClientes() {
         }
     }
 
-    // Filtrar solo el historial del cliente
     const historial = datos.filter(v => v.Cliente?.trim() === nombreCliente);
-
-    // Ordenar por fecha DESC (más reciente primero)
-    historial.sort((a, b) => b.Fecha.localeCompare(a.Fecha));
+    historial.sort((a,b) => b.Fecha.localeCompare(a.Fecha));
 
     // Calcular total gastado
-    const totalGastado = historial.reduce((sum, v) => sum + Number(v.Total || 0), 0);
+    const totalGastado = historial.reduce((acc,v)=>acc + Number(v.Total||0), 0);
 
-    // Construir tabla del historial
     let html = `
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 15px;">
-            <h2>Historial de: ${nombreCliente}</h2>
-            <div style="background:#00AEEF; color:white; padding:8px 12px; border-radius:5px; font-weight:bold;">
-                Total Gastado: $${totalGastado.toFixed(2)}
+        <div class="card" style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <button onclick="cargarClientes()" 
+                    style="padding:8px 14px; background:#007bff; color:white; border:none; border-radius:5px;">
+                    ← Volver a Clientes
+                </button>
+                <div style="background:#00AEEF; color:white; padding:8px 12px; border-radius:5px; font-weight:bold;">
+                    Total Gastado: $${totalGastado.toFixed(2)}
+                </div>
             </div>
-        </div>
 
-        <table>
-            <tr>
-                <th>Fecha</th>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Total</th>
-            </tr>
+            <h2>Historial de: ${nombreCliente}</h2>
+
+            <table>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                </tr>
     `;
 
-    historial.forEach(v => {
+    historial.forEach(v=>{
         html += `
             <tr>
                 <td>${v.Fecha}</td>
@@ -1325,13 +1293,14 @@ async function cargarClientes() {
         `;
     });
 
-    html += `</table>`;
+    html += `</table></div>`;
 
-    // Mostrar en modal
-    document.getElementById("contenidoHistorial").innerHTML = html;
-    document.getElementById("modalHistorial").style.display = "block";
+    document.getElementById("contenedorClientes").innerHTML = "";
+    document.getElementById("historialCliente").innerHTML = html;
 }
+</script>
 
+    
 
         /* ============================================================
    fin
