@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -273,8 +273,8 @@ th, td {
     <div class="btn-menu" onclick="loadSection('Empleados'); toggleMenu();">Empleados</div>
     <div class="btn-menu" onclick="loadSection('Productos'); toggleMenu();">Productos</div>    
     <div class="btn-menu" onclick="loadSection('Cortes'); toggleMenu();">Cortes</div>
-    <div class="btn-menu">Inventario</div>
-    <div class="btn-menu">Clientes</div>
+    <div class="btn-menu">Inventario</div>    
+    <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
 
@@ -400,7 +400,17 @@ else if(section === "Cortes") {
     `;
 }
 
+else if(section === "Clientes") {
+    view.innerHTML = `
+        <h1 class="title">Clientes</h1>
+        <div class="card">
+            <h2>Últimas Compras</h2>
+            <div id="tablaClientes" style="overflow-x:auto;"></div>
+        </div>
+    `;
 
+    cargarClientes();
+}
 
 
     
@@ -1140,6 +1150,76 @@ function limpiarCortes() {
 
 
     
+     /* ============================================================
+   cargar clientes
+============================================================ */
+
+async function cargarClientes() {
+    // Obtener año actual y año anterior (por seguridad)
+    const hoy = new Date();
+    const yearActual = hoy.getFullYear();
+    const yearAnterior = yearActual - 1;
+
+    // Meses del 1 al 12
+    let meses = Array.from({length: 12}, (_, i) => i + 1);
+
+    let datos = [];
+
+    // Cargar año actual y anterior (para asegurarnos que tome últimos registros)
+    for (let y of [yearAnterior, yearActual]) {
+        for (let m of meses) {
+            const mes = String(m).padStart(2, '0');
+            const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${y}_${mes}.json`;
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    const dataMes = await res.json();
+                    datos.push(...dataMes);
+                }
+            } catch {}
+        }
+    }
+
+    // Agrupar clientes para obtener ÚLTIMA FECHA DE COMPRA
+    let clientes = {};
+
+    datos.forEach(v => {
+        const cliente = v.Cliente?.trim() || "Sin nombre";
+
+        if (!clientes[cliente]) {
+            clientes[cliente] = v.Fecha;
+        } else {
+            // Guardar solo la fecha más reciente
+            if (v.Fecha > clientes[cliente]) {
+                clientes[cliente] = v.Fecha;
+            }
+        }
+    });
+
+    // Convertir a tabla
+    let html = `
+        <table>
+            <tr>
+                <th>Cliente</th>
+                <th>Última Compra</th>
+            </tr>
+    `;
+
+    for (let cli in clientes) {
+        html += `
+            <tr>
+                <td>${cli}</td>
+                <td>${clientes[cli]}</td>
+            </tr>
+        `;
+    }
+
+    html += "</table>";
+
+    document.getElementById("tablaClientes").innerHTML = html;
+}
+
+      
      /* ============================================================
    fin
 ============================================================ */
