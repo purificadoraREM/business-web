@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM3</title>
+<title>Purificadora REM4</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -730,57 +730,59 @@ async function calcularPago() {
     if(!fechaIni || !fechaFin || isNaN(pagoHora))
         return alert("Completa todos los campos");
 
-    // Usar strings ISO para comparar
+    // Comparación de strings YYYY-MM-DD (correcto)
     const fi = fechaIni;
     const ff = fechaFin;
 
-    // Convertir solo para calcular meses (esto no afecta el filtro)
-    const fIni = new Date(fi);
-    const fFin = new Date(ff);
-
-    /* cargar todos los meses necesarios */
+    // --- CALCULAR MESES SIN USAR Date() ---
     let meses = [];
-    let y = fIni.getFullYear();
-    let m = fIni.getMonth() + 1;
-    const yEnd = fFin.getFullYear();
-    const mEnd = fFin.getMonth() + 1;
+    let y = Number(fi.slice(0,4));
+    let m = Number(fi.slice(5,7));
+
+    const yEnd = Number(ff.slice(0,4));
+    const mEnd = Number(ff.slice(5,7));
 
     while (y < yEnd || (y === yEnd && m <= mEnd)) {
         meses.push({ y, m });
-        m++; if(m > 12) { m = 1; y++; }
+        m++;
+        if (m > 12) { m = 1; y++; }
     }
 
+    // --- CARGAR REGISTROS ---
     let registros = [];
-    for(const mes of meses){
+
+    for (const mes of meses) {
         const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/RegEmpleados/RegEmpleados_${mes.y}_${String(mes.m).padStart(2,'0')}.json`;
-        try { 
+        try {
             const r = await fetch(url);
             if (r.ok) registros.push(...await r.json());
         } catch {}
     }
 
-    /* FILTRAR usando STRING YYYY-MM-DD */
+    // --- FILTRO SIN Date() ---
     const filtrados = registros.filter(e =>
         e.Fecha >= fi && e.Fecha <= ff
     );
 
+    // --- CALCULAR PAGOS ---
     const pagos = {};
     const advertencias = [];
 
     filtrados.forEach(reg => {
         const calc = calcularHoras(reg.HoraEntrada, reg.HoraSalida);
 
-        if(calc.horas === null) {
+        if (calc.horas === null) {
             advertencias.push(`⚠ No se puede calcular el pago de ${reg.Nombre} el día ${reg.Fecha} porque no tiene hora de salida registrada.`);
             return;
         }
 
-        const totalHoras = calc.horas + calc.minutos / 60;
+        const totalHoras = calc.horas + (calc.minutos / 60);
 
         if (!pagos[reg.Nombre]) pagos[reg.Nombre] = 0;
         pagos[reg.Nombre] += totalHoras;
     });
 
+    // --- DIBUJAR TABLA ---
     let html = `
         <table>
             <tr>
@@ -790,19 +792,19 @@ async function calcularPago() {
             </tr>
     `;
 
-    for(const empleado in pagos){
+    for (const empleado in pagos) {
         html += `
             <tr>
                 <td>${empleado}</td>
                 <td>${pagos[empleado].toFixed(2)}</td>
-                <td>$${(pagos[empleado]*pagoHora).toFixed(2)}</td>
+                <td>$${(pagos[empleado] * pagoHora).toFixed(2)}</td>
             </tr>
         `;
     }
 
     html += "</table>";
 
-    if(advertencias.length > 0){
+    if (advertencias.length > 0) {
         html += `
             <div style="margin-top:15px; padding:12px; background:#ffe1e1; border-left:4px solid red;">
                 <strong>Advertencias:</strong><br>
