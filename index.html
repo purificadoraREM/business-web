@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM7</title>
+<title>Purificadora REM8</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1223,14 +1223,15 @@ async function cargarCortes() {
         }
         html += `</tr>`;
     });
-
+/*---aqui organice  totales--*/
+    
     // Fila de totales
     html += `<tr class="totales">
 <td colspan="2">Totales</td>
-<td>$${totalVenta.toLocaleString()}</td>
 <td>$${totalEfectivo.toLocaleString()}</td>
 <td>$${totalTarjeta.toLocaleString()}</td>
 <td>$${totalTransferencia.toLocaleString()}</td>
+<td>$${totalVenta.toLocaleString()}</td>
 <td>$${totalGasto.toLocaleString()}</td>
 <td colspan="3"></td>
 </tr>`;
