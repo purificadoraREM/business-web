@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM2</title>
+<title>Purificadora REM3</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -270,8 +270,7 @@ th, td {
     <div class="btn-menu" onclick="loadSection('Empleados'); toggleMenu();">Empleados</div>
     <div class="btn-menu" onclick="loadSection('Productos'); toggleMenu();">Productos</div>    
     <div class="btn-menu" onclick="loadSection('Cortes'); toggleMenu();">Cortes</div>
-    <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>
-    <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>
+    <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>   
     <div class="btn-menu" onclick="loadSection('Inventario'); toggleMenu();">Inventario</div>    
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -731,18 +730,23 @@ async function calcularPago() {
     if(!fechaIni || !fechaFin || isNaN(pagoHora))
         return alert("Completa todos los campos");
 
-    const fIni = new Date(fechaIni);
-    const fFin = new Date(fechaFin);
+    // Usar strings ISO para comparar
+    const fi = fechaIni;
+    const ff = fechaFin;
+
+    // Convertir solo para calcular meses (esto no afecta el filtro)
+    const fIni = new Date(fi);
+    const fFin = new Date(ff);
 
     /* cargar todos los meses necesarios */
     let meses = [];
     let y = fIni.getFullYear();
-    let m = fIni.getMonth()+1;
+    let m = fIni.getMonth() + 1;
     const yEnd = fFin.getFullYear();
-    const mEnd = fFin.getMonth()+1;
+    const mEnd = fFin.getMonth() + 1;
 
-    while(y < yEnd || (y === yEnd && m <= mEnd)) {
-        meses.push({y, m});
+    while (y < yEnd || (y === yEnd && m <= mEnd)) {
+        meses.push({ y, m });
         m++; if(m > 12) { m = 1; y++; }
     }
 
@@ -750,16 +754,15 @@ async function calcularPago() {
     for(const mes of meses){
         const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/RegEmpleados/RegEmpleados_${mes.y}_${String(mes.m).padStart(2,'0')}.json`;
         try { 
-            const r = await fetch(url); 
-            if(r.ok) registros.push(...await r.json());
+            const r = await fetch(url);
+            if (r.ok) registros.push(...await r.json());
         } catch {}
     }
 
-    /* filtrar por rango exacto */
-    const filtrados = registros.filter(e => {
-        const f = new Date(e.Fecha);
-        return f >= fIni && f <= fFin;
-    });
+    /* FILTRAR usando STRING YYYY-MM-DD */
+    const filtrados = registros.filter(e =>
+        e.Fecha >= fi && e.Fecha <= ff
+    );
 
     const pagos = {};
     const advertencias = [];
@@ -772,9 +775,9 @@ async function calcularPago() {
             return;
         }
 
-        const totalHoras = calc.horas + calc.minutos/60;
+        const totalHoras = calc.horas + calc.minutos / 60;
 
-        if(!pagos[reg.Nombre]) pagos[reg.Nombre] = 0;
+        if (!pagos[reg.Nombre]) pagos[reg.Nombre] = 0;
         pagos[reg.Nombre] += totalHoras;
     });
 
@@ -799,7 +802,6 @@ async function calcularPago() {
 
     html += "</table>";
 
-    /* mensajes de advertencia */
     if(advertencias.length > 0){
         html += `
             <div style="margin-top:15px; padding:12px; background:#ffe1e1; border-left:4px solid red;">
@@ -811,6 +813,7 @@ async function calcularPago() {
 
     document.getElementById("resultadoPago").innerHTML = html;
 }
+
 
 /* ============================================================
    exportar a excel
