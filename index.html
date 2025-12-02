@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1422,17 +1422,65 @@ async function cargarInventario() {
    exportar excel
 ============================================================ */    
 
-    document.getElementById("exportExcel").addEventListener("click", () => {
-    exportarHistorialAExcel(historialData, "HistorialCliente.xlsx");
-});
+  async function exportarHistorialExcel(nombreCliente) {
+    // Mostrar mensaje mientras carga
+    const panel = document.getElementById("historialCliente");
+    panel.innerHTML = `<h2>Historial de ${nombreCliente}</h2><p>Generando Excel...</p>`;
 
-function exportarHistorialAExcel(data, filename) {
-    // data debe ser un array de objetos, ej: [{Fecha:'2025-12-01', Total:100,...}, {...}]
-    const ws = XLSX.utils.json_to_sheet(data);
+    // Obtener datos del historial igual que en mostrarHistorialCliente
+    const hoy = new Date();
+    const yearActual = hoy.getFullYear();
+    const yearAnterior = yearActual - 1;
+
+    let datos = [];
+
+    for (let y of [yearAnterior, yearActual]) {
+        for (let m = 1; m <= 12; m++) {
+            const mes = String(m).padStart(2, '0');
+            const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${y}_${mes}.json`;
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    const dataMes = await res.json();
+                    datos.push(...dataMes);
+                }
+            } catch {}
+        }
+    }
+
+    // Filtrar historial del cliente
+    const historial = datos.filter(v => v.Cliente?.trim() === nombreCliente);
+
+    if (historial.length === 0) {
+        alert("Este cliente no tiene compras registradas.");
+        mostrarHistorialCliente(nombreCliente); // recargar vista
+        return;
+    }
+
+    // Crear hoja de Excel
+    const ws_data = [
+        ["Fecha", "Artículo", "Cantidad", "Total"]
+    ];
+
+    historial.forEach(h => {
+        ws_data.push([h.Fecha, h.Articulo, h.Cantidad, Number(h.Total)]);
+    });
+
+    // Agregar fila final con total
+    const totalComprado = historial.reduce((acc, h) => acc + Number(h.Total), 0);
+    ws_data.push(["", "", "Total comprado", totalComprado]);
+
     const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
     XLSX.utils.book_append_sheet(wb, ws, "Historial");
-    XLSX.writeFile(wb, filename);
+
+    // Descargar archivo
+    XLSX.writeFile(wb, `Historial_${nombreCliente}.xlsx`);
+
+    // Recargar vista del historial
+    mostrarHistorialCliente(nombreCliente);
 }
+
 
     /* ============================================================
    fin
