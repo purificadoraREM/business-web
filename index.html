@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1311,21 +1311,26 @@ async function mostrarHistorialCliente(nombreCliente) {
     // 🔥 Calcular total comprado
     const totalComprado = historial.reduce((acc, h) => acc + Number(h.Total), 0);
 
+    // HTML del indicador + botón exportar
     let html = `
         <h2>Historial de ${nombreCliente}</h2>
 
-        <!-- Indicador de total -->
-        <div style="
-            background:#00AEEF;
-            color:white;
-            padding:12px;
-            margin-bottom:15px;
-            border-radius:10px;
-            font-size:18px;
-            font-weight:bold;
-            text-align:center;
-        ">
-            Total comprado: $${totalComprado.toFixed(2)}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <!-- Indicador de total -->
+            <div style="
+                background:#00AEEF;
+                color:white;
+                padding:12px;
+                border-radius:10px;
+                font-size:18px;
+                font-weight:bold;
+                text-align:center;
+            ">
+                Total comprado: $${totalComprado.toFixed(2)}
+            </div>
+
+            <!-- Botón exportar Excel -->
+            <button class="btnAction" onclick="exportarHistorialExcel('${nombreCliente}')">Exportar a Excel</button>
         </div>
 
         <table style="width:100%;">
