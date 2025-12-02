@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM4</title>
+<title>Purificadora REM5</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1098,51 +1098,59 @@ function limpiarMovimientos() {
 
     let cortesFiltrados = []; // Para exportar y limpiar
 
+    /*---------------------------------------
+    cargar cortes
+    ------------------------------------------*/
+
 async function cargarCortes() {
     const ini = document.getElementById("fechaCorteInicio").value;
     const fin = document.getElementById("fechaCorteFin").value;
 
     if(!ini || !fin) return alert("Selecciona ambas fechas");
 
-    const fIni = new Date(ini);
-    const fFin = new Date(fin);
+    // --- USAR STRINGS PARA EL FILTRO ---
+    const fi = ini;
+    const ff = fin;
 
-    // Determinar meses a cargar
+    // --- CALCULAR MESES SIN Date() ---
     let meses = [];
-    let y = fIni.getFullYear();
-    let m = fIni.getMonth() + 1;
-    const yFin = fFin.getFullYear();
-    const mFin = fFin.getMonth() + 1;
+    let y = Number(fi.slice(0,4));
+    let m = Number(fi.slice(5,7));
 
-    while(y < yFin || (y === yFin && m <= mFin)) {
-        meses.push({y, m});
+    const yFin = Number(ff.slice(0,4));
+    const mFin = Number(ff.slice(5,7));
+
+    while (y < yFin || (y === yFin && m <= mFin)) {
+        meses.push({ y, m });
         m++;
-        if(m > 12){ m = 1; y++; }
+        if (m > 12) { m = 1; y++; }
     }
 
+    // --- CARGAR ARCHIVOS ---
     let registros = [];
-    for(const mes of meses){
+    for (const mes of meses) {
         const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/CortesVenta/CortesVenta_${mes.y}_${String(mes.m).padStart(2,'0')}.json`;
         try {
             const r = await fetch(url);
-            if(r.ok) registros.push(...await r.json());
+            if (r.ok) registros.push(...await r.json());
         } catch{}
     }
 
-    // Filtrar por rango exacto
-    const filtrados = registros.filter(r => {
-        const f = new Date(r.Fecha);
-        return f >= fIni && f <= fFin;
-    });
+    // --- FILTRAR POR STRING (YYYY-MM-DD) ---
+    const filtrados = registros.filter(r =>
+        r.Fecha >= fi && r.Fecha <= ff
+    );
 
-    cortesFiltrados = filtrados; // guardar para exportar o limpiar
+    cortesFiltrados = filtrados;
 
-    if(filtrados.length === 0){
-        document.getElementById("tablaCortes").innerHTML = "<p>No se encontraron cortes para este rango</p>";
+    // Si no hay datos
+    if (filtrados.length === 0) {
+        document.getElementById("tablaCortes").innerHTML =
+            "<p>No se encontraron cortes para este rango</p>";
         return;
     }
 
-    // Construir tabla dinámica mostrando todas las propiedades del JSON
+    // --- CONSTRUIR TABLA DINÁMICA ---
     let html = "<table><tr>";
     Object.keys(filtrados[0]).forEach(k => html += `<th>${k}</th>`);
     html += "</tr>";
@@ -1154,9 +1162,11 @@ async function cargarCortes() {
     });
 
     html += "</table>";
+
     document.getElementById("tablaCortes").innerHTML = html;
 }
 
+    
 
 function exportarCortesExcel() {
     if(cortesFiltrados.length === 0) return alert("No hay registros para exportar");
