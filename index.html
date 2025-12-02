@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1190,37 +1190,74 @@ function limpiarCortes() {
    CARGAR CLIENTES
 ============================================================ */
 async function cargarClientes() {
+
+    const contenedor = document.getElementById("contenedorClientes");
+
+    // Mensaje inicial
+    contenedor.innerHTML = `
+        <div style="padding:20px; font-size:18px; text-align:center;">
+            ⏳ Cargando información...
+        </div>
+    `;
+
     const hoy = new Date();
     const yearActual = hoy.getFullYear();
     const yearAnterior = yearActual - 1;
 
     let datos = [];
+    let archivosCargados = 0;
 
+    // Intento de cargar datos
     for (let y of [yearAnterior, yearActual]) {
         for (let m = 1; m <= 12; m++) {
             const mes = String(m).padStart(2, '0');
             const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${y}_${mes}.json`;
+
             try {
                 const res = await fetch(url);
-                if(res.ok){
+                if (res.ok) {
                     const dataMes = await res.json();
                     datos.push(...dataMes);
+                    archivosCargados++;
                 }
-            } catch {}
+            } catch (error) {
+                console.error("Error cargando:", url);
+            }
         }
+    }
+
+    // Si no cargó nada
+    if (archivosCargados === 0) {
+        contenedor.innerHTML = `
+            <div style="padding:20px; color:red; font-size:18px; text-align:center;">
+                ❌ No se pudo cargar la información.
+            </div>
+        `;
+        return;
     }
 
     let clientes = {};
 
     datos.forEach(v => {
         const cliente = v.Cliente?.trim() || "Sin nombre";
-        if(["N/A","Ningún Cliente Seleccionado","","-"].includes(cliente)) return;
+        if (["N/A","Ningún Cliente Seleccionado","","-"].includes(cliente)) return;
 
-        if(!clientes[cliente] || v.Fecha > clientes[cliente]){
+        if (!clientes[cliente] || v.Fecha > clientes[cliente]) {
             clientes[cliente] = v.Fecha;
         }
     });
 
+    // Si no hay clientes válidos
+    if (Object.keys(clientes).length === 0) {
+        contenedor.innerHTML = `
+            <div style="padding:20px; color:red; font-size:18px; text-align:center;">
+                ⚠️ No se encontraron clientes.
+            </div>
+        `;
+        return;
+    }
+
+    // Construcción de la tabla
     let html = `
         <table style="width:100%;">
             <tr>
@@ -1229,13 +1266,12 @@ async function cargarClientes() {
             </tr>
     `;
 
-    // Ordenar por fecha ascendente
-    const listaOrdenada = Object.entries(clientes).sort((a,b)=>a[1].localeCompare(b[1]));
+    const listaOrdenada = Object.entries(clientes).sort((a,b)=> a[1].localeCompare(b[1]));
 
     const hoyISO = new Date().toISOString().split("T")[0];
 
-    listaOrdenada.forEach(([cliente, fecha])=>{
-        const diasSinComprar = (new Date(hoyISO) - new Date(fecha)) / (1000*60*60*24);
+    listaOrdenada.forEach(([cliente, fecha]) => {
+        const diasSinComprar = (new Date(hoyISO) - new Date(fecha)) / (1000 * 60 * 60 * 24);
         const styleRojo = diasSinComprar >= 7 ? "color:red;font-weight:bold;" : "";
 
         html += `
@@ -1247,7 +1283,8 @@ async function cargarClientes() {
     });
 
     html += "</table>";
-    document.getElementById("contenedorClientes").innerHTML = html;
+
+    contenedor.innerHTML = html;
 }
 
 
