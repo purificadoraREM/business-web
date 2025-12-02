@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM8</title>
+<title>Purificadora REM9</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1248,15 +1248,15 @@ function exportarCortesExcel() {
     // Solo columnas relevantes
     const dataExport = cortesFiltrados.map(r => ({
         ID: r.CorteID,
-        Fecha: r.Fecha,
-        "Total Venta": r.TotalVenta,
+        Fecha: r.Fecha,       
         Efectivo: r.TotalEfectivo,
         Tarjeta: r.TotalTarjeta,
         Transferencia: r.TotalTransferencia,
-        Gastos: r.Gasto,
-        Usuario: r.Usuario,
+        "Total Venta": r.TotalVenta,
+        Gastos: r.Gasto,        
         "Efectivo Contado": r.EfectivoContado,
-        "Fondo Final": r.FondoFinal
+        "Fondo Final": r.FondoFinal,
+        Usuario: r.Usuario
     }));
 
     const ws = XLSX.utils.json_to_sheet(dataExport);
