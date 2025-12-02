@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM5</title>
+<title>Purificadora REM6</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -158,6 +158,47 @@ th, td {
     #chartsContainer { flex-direction: column; }
     #chartWrapper, #pieWrapper { width: 100%; height: 300px; }
 }
+/*--  tablas de corte  --*/
+    .corte-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.corte-table thead {
+    background: linear-gradient(90deg, #4e54c8, #8f94fb);
+    color: white;
+    font-weight: bold;
+}
+
+.corte-table th, .corte-table td {
+    padding: 12px 15px;
+    text-align: center;
+}
+
+.corte-table tbody tr {
+    background: #ffffff;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.corte-table tbody tr:hover {
+    background: #f1f1ff;
+    transform: scale(1.02);
+}
+
+.corte-table tbody tr:nth-child(even) {
+    background: #f9f9ff;
+}
+
+.corte-table .totales {
+    font-weight: bold;
+    background: #ecebff;
+    border-top: 2px solid #4e54c8;
+}
 
 /* Tablas producto y movimientos */
 .card table {
@@ -235,6 +276,7 @@ th, td {
     #overlay.show {
         display: block;
     }
+       
 }
 
 
@@ -1108,15 +1150,13 @@ async function cargarCortes() {
 
     if(!ini || !fin) return alert("Selecciona ambas fechas");
 
-    // --- USAR STRINGS PARA EL FILTRO ---
     const fi = ini;
     const ff = fin;
 
-    // --- CALCULAR MESES SIN Date() ---
+    // Calcular meses
     let meses = [];
     let y = Number(fi.slice(0,4));
     let m = Number(fi.slice(5,7));
-
     const yFin = Number(ff.slice(0,4));
     const mFin = Number(ff.slice(5,7));
 
@@ -1126,7 +1166,7 @@ async function cargarCortes() {
         if (m > 12) { m = 1; y++; }
     }
 
-    // --- CARGAR ARCHIVOS ---
+    // Cargar archivos
     let registros = [];
     for (const mes of meses) {
         const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/CortesVenta/CortesVenta_${mes.y}_${String(mes.m).padStart(2,'0')}.json`;
@@ -1136,33 +1176,66 @@ async function cargarCortes() {
         } catch{}
     }
 
-    // --- FILTRAR POR STRING (YYYY-MM-DD) ---
-    const filtrados = registros.filter(r =>
-        r.Fecha >= fi && r.Fecha <= ff
-    );
-
+    // Filtrar por fechas
+    const filtrados = registros.filter(r => r.Fecha >= fi && r.Fecha <= ff);
     cortesFiltrados = filtrados;
 
-    // Si no hay datos
     if (filtrados.length === 0) {
         document.getElementById("tablaCortes").innerHTML =
             "<p>No se encontraron cortes para este rango</p>";
         return;
     }
 
-    // --- CONSTRUIR TABLA DINÁMICA ---
-    let html = "<table><tr>";
-    Object.keys(filtrados[0]).forEach(k => html += `<th>${k}</th>`);
-    html += "</tr>";
+    // Columnas amigables
+    const columnas = {
+        CorteID: "ID",
+        Fecha: "Fecha",
+        TotalVenta: "Total Venta",
+        TotalEfectivo: "Efectivo",
+        TotalTarjeta: "Tarjeta",
+        TotalTransferencia: "Transferencia",
+        Gasto: "Gastos",
+        Usuario: "Usuario",
+        EfectivoContado: "Efectivo Contado",
+        FondoFinal: "Fondo Final"
+    };
+
+    // Totales
+    let totalVenta=0, totalEfectivo=0, totalTarjeta=0, totalTransferencia=0, totalGasto=0;
+
+    let html = `<table class="corte-table"><thead><tr>`;
+    for(const key in columnas) html += `<th>${columnas[key]}</th>`;
+    html += `</tr></thead><tbody>`;
 
     filtrados.forEach(r => {
-        html += "<tr>";
-        Object.values(r).forEach(v => html += `<td>${v}</td>`);
-        html += "</tr>";
+        html += `<tr>`;
+        for(const key in columnas){
+            let value = r[key];
+            if(["TotalVenta","TotalEfectivo","TotalTarjeta","TotalTransferencia","Gasto","EfectivoContado","FondoFinal"].includes(key)){
+                value = "$"+Number(value).toLocaleString();
+                if(key==="TotalVenta") totalVenta+=Number(r[key]);
+                if(key==="TotalEfectivo") totalEfectivo+=Number(r[key]);
+                if(key==="TotalTarjeta") totalTarjeta+=Number(r[key]);
+                if(key==="TotalTransferencia") totalTransferencia+=Number(r[key]);
+                if(key==="Gasto") totalGasto+=Number(r[key]);
+            }
+            html += `<td>${value}</td>`;
+        }
+        html += `</tr>`;
     });
 
-    html += "</table>";
+    // Fila de totales
+    html += `<tr class="totales">
+<td colspan="2">Totales</td>
+<td>$${totalVenta.toLocaleString()}</td>
+<td>$${totalEfectivo.toLocaleString()}</td>
+<td>$${totalTarjeta.toLocaleString()}</td>
+<td>$${totalTransferencia.toLocaleString()}</td>
+<td>$${totalGasto.toLocaleString()}</td>
+<td colspan="3"></td>
+</tr>`;
 
+    html += "</tbody></table>";
     document.getElementById("tablaCortes").innerHTML = html;
 }
 
@@ -1171,7 +1244,21 @@ async function cargarCortes() {
 function exportarCortesExcel() {
     if(cortesFiltrados.length === 0) return alert("No hay registros para exportar");
 
-    const ws = XLSX.utils.json_to_sheet(cortesFiltrados);
+    // Solo columnas relevantes
+    const dataExport = cortesFiltrados.map(r => ({
+        ID: r.CorteID,
+        Fecha: r.Fecha,
+        "Total Venta": r.TotalVenta,
+        Efectivo: r.TotalEfectivo,
+        Tarjeta: r.TotalTarjeta,
+        Transferencia: r.TotalTransferencia,
+        Gastos: r.Gasto,
+        Usuario: r.Usuario,
+        "Efectivo Contado": r.EfectivoContado,
+        "Fondo Final": r.FondoFinal
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataExport);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Cortes");
     XLSX.writeFile(wb, "Cortes.xlsx");
@@ -1192,10 +1279,6 @@ function limpiarCortes() {
     const tabla = document.getElementById("tablaCortes");
     if(tabla) tabla.innerHTML = "<p>Búsqueda limpia. Selecciona fechas para cargar cortes.</p>";
 }
-
-
-
-
     function toggleMenu() {
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
