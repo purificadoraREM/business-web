@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -554,7 +554,7 @@ else if(section === "Clientes") {
     // Cargar automáticamente al mostrar la sección
     cargarInventario();
 }
- else if (section === "Gastos") {
+else if (section === "Gastos") {
     view.innerHTML = `
         <div class="gastos-portal">
 
@@ -577,7 +577,11 @@ else if(section === "Clientes") {
 
                     <div class="form-group">
                         <label>Método de Pago</label>
-                        <input type="text" id="gastoMetodo" class="input small-input">
+                        <select id="gastoMetodo" class="input small-input">
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Efectivo">Efectivo</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -589,6 +593,7 @@ else if(section === "Clientes") {
                         <label>Notas</label>
                         <textarea id="gastoNotas" class="input textarea small-input"></textarea>
                     </div>
+
                 </div>
 
                 <button class="btn-primary" onclick="enviarGasto()">Registrar Gasto</button>
@@ -601,8 +606,11 @@ else if(section === "Clientes") {
 
         </div>
     `;
+
    
 }
+
+
 
 
 
