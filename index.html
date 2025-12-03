@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -89,93 +89,53 @@ button.btnAction:hover {
     background: #0086bd;
 }
 /* =========================================================
-   CSS exclusivo del PORTAL DE GASTOS
-   Nada de esto afectará otras pantallas del sistema
-   Solo funciona dentro de un div.gastos-portal
+   PORTAL DE GASTOS - COMPACTO Y SIN ENCIMARSE
 ========================================================= */
 
-.gastos-portal .title {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 25px;
-    color: #2c3e50;
-}
-
-/* ---------- Tarjetas ---------- */
-.gastos-portal .card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 25px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    border: 1px solid #e6e6e6;
-}
-
-.gastos-portal .card-title {
-    font-size: 22px;
-    margin-bottom: 20px;
-    color: #34495e;
-}
-
-/* ---------- Grid ---------- */
-.gastos-portal .grid-2 {
+.gastos-portal .grid-2-compact {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
 }
 
 .gastos-portal .full {
     grid-column: span 2;
 }
 
-/* ---------- Inputs ---------- */
+/* Inputs más pequeños */
+.gastos-portal .small-input {
+    padding: 8px 10px;
+    font-size: 14px;
+}
+
+/* Ajuste general */
 .gastos-portal .input {
     width: 100%;
-    padding: 12px;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid #cbd5e1;
     background: #f8fafc;
-    font-size: 15px;
-    transition: all .2s;
+    transition: .2s;
 }
 
 .gastos-portal .input:focus {
     border-color: #3498db;
     background: #fff;
-    box-shadow: 0 0 6px rgba(52, 152, 219, 0.25);
-    outline: none;
+    box-shadow: 0 0 4px rgba(52, 152, 219, .25);
 }
 
 .gastos-portal .textarea {
-    height: 90px;
-    resize: none;
+    height: 70px;
 }
 
-/* ---------- Botón Principal ---------- */
-.gastos-portal .btn-primary {
-    background: #3498db;
-    color: white;
-    border: none;
-    padding: 14px 20px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 20px;
-    width: 100%;
-    transition: 0.2s;
+/* Responsivo: nunca se enciman */
+@media (max-width: 700px) {
+    .gastos-portal .grid-2-compact {
+        grid-template-columns: 1fr;
+    }
 }
 
-.gastos-portal .btn-primary:hover {
-    background: #217dbb;
-}
 
-/* ---------- Tabla ---------- */
-.gastos-portal .table-container {
-    max-height: 500px;
-    overflow-y: auto;
-    overflow-x: auto;
-}
-
+    
 /* Contenedor botones + tarjeta */
 #controlRow {
     display: flex;
@@ -594,7 +554,7 @@ else if(section === "Clientes") {
     // Cargar automáticamente al mostrar la sección
     cargarInventario();
 }
-  else if (section === "Gastos") {
+ else if (section === "Gastos") {
     view.innerHTML = `
         <div class="gastos-portal">
 
@@ -603,35 +563,31 @@ else if(section === "Clientes") {
             <div class="card form-card">
                 <h2 class="card-title">Nuevo Gasto</h2>
 
-                <div class="grid-2">
+                <div class="grid-2-compact">
+
                     <div class="form-group">
                         <label>Concepto</label>
-                        <input type="text" id="gastoConcepto" class="input">
+                        <input type="text" id="gastoConcepto" class="input small-input">
                     </div>
 
                     <div class="form-group">
                         <label>Monto</label>
-                        <input type="number" id="gastoMonto" class="input">
+                        <input type="number" id="gastoMonto" class="input small-input">
                     </div>
 
                     <div class="form-group">
                         <label>Método de Pago</label>
-                        <input type="text" id="gastoMetodo" class="input">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Cajero</label>
-                        <input type="text" id="gastoCajero" class="input">
-                    </div>
-
-                    <div class="form-group full">
-                        <label>Notas</label>
-                        <textarea id="gastoNotas" class="input textarea"></textarea>
+                        <input type="text" id="gastoMetodo" class="input small-input">
                     </div>
 
                     <div class="form-group">
                         <label>Fecha</label>
-                        <input type="date" id="gastoFecha" class="input">
+                        <input type="date" id="gastoFecha" class="input small-input">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Notas</label>
+                        <textarea id="gastoNotas" class="input textarea small-input"></textarea>
                     </div>
                 </div>
 
@@ -645,8 +601,7 @@ else if(section === "Clientes") {
 
         </div>
     `;
-
-  
+   
 }
 
 
