@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -314,6 +314,7 @@ th, td {
     <div class="btn-menu" onclick="loadSection('Cortes'); toggleMenu();">Cortes</div>
     <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>   
     <div class="btn-menu" onclick="loadSection('Inventario'); toggleMenu();">Inventario</div>    
+      <div class="btn-menu" onclick="loadSection('Gastos'); toggleMenu();">Gastos</div>  
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
 
@@ -491,6 +492,67 @@ else if(section === "Clientes") {
 
     // Cargar automáticamente al mostrar la sección
     cargarInventario();
+}
+     else if(section === "Inventario") {
+    view.innerHTML = `
+        <h1 class="title">Inventario</h1>
+
+        <div class="card">
+            <h2>Movimientos de Inventario</h2>
+
+            <div id="tablaInventario" style="max-height:500px; overflow-y:auto; overflow-x:auto;"></div>
+        </div>
+    `;
+
+    // Cargar automáticamente al mostrar la sección
+    cargarInventario();
+}
+    else if (section === "Gastos") {
+    view.innerHTML = `
+        <h1 class="title">Registrar Gasto</h1>
+
+        <div class="card">
+            <h2>Nuevo Gasto</h2>
+
+            <div class="form-group">
+                <label>Concepto:</label>
+                <input type="text" id="gastoConcepto" class="input">
+            </div>
+
+            <div class="form-group">
+                <label>Monto:</label>
+                <input type="number" id="gastoMonto" class="input">
+            </div>
+
+            <div class="form-group">
+                <label>Método de Pago:</label>
+                <input type="text" id="gastoMetodo" class="input">
+            </div>
+
+            <div class="form-group">
+                <label>Notas:</label>
+                <input type="text" id="gastoNotas" class="input">
+            </div>
+
+            <div class="form-group">
+                <label>Cajero:</label>
+                <input type="text" id="gastoCajero" class="input">
+            </div>
+
+            <div class="form-group">
+                <label>Fecha:</label>
+                <input type="date" id="gastoFecha" class="input">
+            </div>
+
+            <button class="btn" onclick="enviarGasto()">Enviar</button>
+        </div>
+
+        <div class="card">
+            <h2>Historial de Gastos</h2>
+            <div id="tablaGastos" style="max-height:500px; overflow-y:auto; overflow-x:auto;"></div>
+        </div>
+    `;
+
 }
 
     }
