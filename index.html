@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -88,48 +88,129 @@ button.btnAction {
 button.btnAction:hover {
     background: #0086bd;
 }
+
 /* =========================================================
-   PORTAL DE GASTOS - COMPACTO Y SIN ENCIMARSE
+   ESTILOS GASTOS PREMIUM — TOTALMENTE AISLADOS
 ========================================================= */
 
-.gastos-portal .grid-2-compact {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px;
+.gastos-premium .title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 25px;
 }
 
-.gastos-portal .full {
+.gastos-premium .card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 35px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.gastos-premium .card-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #374151;
+}
+
+/* GRID */
+.gastos-premium .grid-2-premium {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+}
+
+.gastos-premium .full {
     grid-column: span 2;
 }
 
-/* Inputs más pequeños */
-.gastos-portal .small-input {
-    padding: 8px 10px;
-    font-size: 14px;
+/* INPUTS CON ICONO */
+.gastos-premium .input-icon {
+    position: relative;
 }
 
-/* Ajuste general */
-.gastos-portal .input {
+.gastos-premium .icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    font-size: 17px;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.gastos-premium .textarea-icon .icon {
+    top: 16px; /* Ajuste especial textarea */
+}
+
+/* INPUT PREMIUM */
+.gastos-premium .input {
     width: 100%;
-    border-radius: 6px;
-    border: 1px solid #cbd5e1;
-    background: #f8fafc;
-    transition: .2s;
+    padding: 12px 14px 12px 38px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    border: 2px solid transparent;
+    font-size: 15px;
+    transition: 0.2s;
 }
 
-.gastos-portal .input:focus {
-    border-color: #3498db;
-    background: #fff;
-    box-shadow: 0 0 4px rgba(52, 152, 219, .25);
+.gastos-premium .input:focus {
+    background: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 6px rgba(59,130,246,0.25);
+    outline: none;
 }
 
-.gastos-portal .textarea {
-    height: 70px;
+/* Textarea */
+.gastos-premium .textarea {
+    height: 90px;
+    resize: none;
 }
 
-/* Responsivo: nunca se enciman */
-@media (max-width: 700px) {
-    .gastos-portal .grid-2-compact {
+/* SELECT PREMIUM */
+.gastos-premium .select-premium {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 4 l4 4 4 -4' stroke='%23838' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 12px) center;
+    cursor: pointer;
+}
+
+/* BOTÓN PREMIUM */
+.gastos-premium .btn-premium {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border: none;
+    padding: 14px 20px;
+    width: 100%;
+    font-size: 17px;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    margin-top: 25px;
+    transition: 0.25s;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.gastos-premium .btn-premium:hover {
+    background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+}
+
+/* Tabla */
+.gastos-premium .table-container {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* RESPONSIVE */
+@media (max-width: 750px) {
+    .gastos-premium .grid-2-premium {
         grid-template-columns: 1fr;
     }
 }
@@ -556,47 +637,67 @@ else if(section === "Clientes") {
 }
 else if (section === "Gastos") {
     view.innerHTML = `
-        <div class="gastos-portal">
+        <div class="gastos-portal gastos-premium">
 
             <h1 class="title">💼 Registrar Gasto</h1>
 
             <div class="card form-card">
                 <h2 class="card-title">Nuevo Gasto</h2>
 
-                <div class="grid-2-compact">
+                <div class="grid-2-premium">
 
+                    <!-- Concepto -->
                     <div class="form-group">
                         <label>Concepto</label>
-                        <input type="text" id="gastoConcepto" class="input small-input">
+                        <div class="input-icon">
+                            <span class="icon">📝</span>
+                            <input type="text" id="gastoConcepto" class="input">
+                        </div>
                     </div>
 
+                    <!-- Monto -->
                     <div class="form-group">
                         <label>Monto</label>
-                        <input type="number" id="gastoMonto" class="input small-input">
+                        <div class="input-icon">
+                            <span class="icon">💵</span>
+                            <input type="number" id="gastoMonto" class="input">
+                        </div>
                     </div>
 
+                    <!-- Método de Pago -->
                     <div class="form-group">
                         <label>Método de Pago</label>
-                        <select id="gastoMetodo" class="input small-input">
-                            <option value="Tarjeta">Tarjeta</option>
-                            <option value="Transferencia">Transferencia</option>
-                            <option value="Efectivo">Efectivo</option>
-                        </select>
+                        <div class="input-icon">
+                            <span class="icon">💳</span>
+                            <select id="gastoMetodo" class="input select-premium">
+                                <option value="Tarjeta">Tarjeta</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Efectivo">Efectivo</option>
+                            </select>
+                        </div>
                     </div>
 
+                    <!-- Fecha -->
                     <div class="form-group">
                         <label>Fecha</label>
-                        <input type="date" id="gastoFecha" class="input small-input">
+                        <div class="input-icon">
+                            <span class="icon">📅</span>
+                            <input type="date" id="gastoFecha" class="input">
+                        </div>
                     </div>
 
+                    <!-- Notas -->
                     <div class="form-group full">
                         <label>Notas</label>
-                        <textarea id="gastoNotas" class="input textarea small-input"></textarea>
+                        <div class="input-icon textarea-icon">
+                            <span class="icon">📘</span>
+                            <textarea id="gastoNotas" class="input textarea"></textarea>
+                        </div>
                     </div>
 
                 </div>
 
-                <button class="btn-primary" onclick="enviarGasto()">Registrar Gasto</button>
+                <button class="btn-premium" onclick="enviarGasto()">Registrar Gasto</button>
             </div>
 
             <div class="card">
@@ -607,8 +708,9 @@ else if (section === "Gastos") {
         </div>
     `;
 
-   
+  
 }
+
 
 
 
