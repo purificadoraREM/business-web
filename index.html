@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -695,6 +695,15 @@ else if (section === "Gastos") {
                         </div>
                     </div>
 
+                    <!-- Clave de seguridad -->
+                    <div class="form-group full">
+                        <label>Clave de Seguridad</label>
+                        <div class="input-icon">
+                            <span class="icon">🔑</span>
+                            <input type="password" id="apiKeyInput" class="input" placeholder="Ingresa tu clave">
+                        </div>
+                    </div>
+
                 </div>
 
                 <button class="btn-premium" onclick="enviarGasto()">Registrar Gasto</button>
@@ -707,8 +716,6 @@ else if (section === "Gastos") {
 
         </div>
     `;
-
-  
 }
 
 
@@ -1850,17 +1857,23 @@ async function cargarInventario() {
   enviar gasto
 ============================================================ */  
 
- async function enviarGasto() {
+async function enviarGasto() {
     const concepto = document.getElementById("gastoConcepto").value;
     const monto = document.getElementById("gastoMonto").value;
     const metodo = document.getElementById("gastoMetodo").value;
     const fecha = document.getElementById("gastoFecha").value;
     const notas = document.getElementById("gastoNotas").value;
+    const apiKey = document.getElementById("apiKeyInput").value; // <- clave ingresada por el usuario
     const cajero = "Admin";
 
     // Validación básica
     if (!concepto || !monto || !fecha) {
         alert("Por favor, completa los campos obligatorios.");
+        return;
+    }
+
+    if (!apiKey) {
+        alert("Por favor, ingresa tu clave de seguridad.");
         return;
     }
 
@@ -1878,14 +1891,13 @@ async function cargarInventario() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": "REM"
+                "x-api-key": apiKey // <- enviamos la clave que el usuario escribió
             },
             body: JSON.stringify(gasto)
         });
 
         const result = await response.json();
 
-        // 👇 Aquí mostramos lo que el Worker recibió
         console.log("RESPUESTA DEL WORKER:", result);
         alert(JSON.stringify(result, null, 2));
 
@@ -1896,6 +1908,7 @@ async function cargarInventario() {
             document.getElementById("gastoConcepto").value = "";
             document.getElementById("gastoMonto").value = "";
             document.getElementById("gastoNotas").value = "";
+            document.getElementById("apiKeyInput").value = ""; // limpiar clave también
         } else {
             alert("Error al enviar gasto: " + (result.error || result));
         }
