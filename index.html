@@ -511,36 +511,31 @@ function loadSection(section) {
             </div>
         `;
     } else if(section === "Empleados") {
-    view.innerHTML = `
-        <h1 class="title">Empleados</h1>
+        view.innerHTML = `
+            <h1 class="title">Empleados</h1>
+            <div class="card">
+                <h2>Asistencias</h2>
+    <div id="controlEmpleado">
+    <input type="date" id="fechaRegistroInicio">
+    <input type="date" id="fechaRegistroFin">
+    <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
+    <button class="btnAction" onclick="exportarAsistencias()">Exportar Excel</button>
+</div>
+<div id="tablaRegistros"></div>
 
-        <!-- CARD 1 - CONSULTAR ASISTENCIAS -->
-        <div class="card">
-            <h2>Asistencias</h2>
-            <div id="controlEmpleado">
-                <input type="date" id="fechaRegistroInicio">
-                <input type="date" id="fechaRegistroFin">
-                <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
-                <button class="btnAction" onclick="exportarAsistencias()">Exportar Excel</button>
             </div>
-            <div id="tablaRegistros"></div>
-        </div>
-
-      
-
-        <!-- CARD 2 - CALCULAR PAGO -->
-        <div class="card">
-            <h2>Calcular Pago</h2>
-            <div id="controlPago">
-                <input type="date" id="fechaPagoInicio">
-                <input type="date" id="fechaPagoFin">
-                <input type="number" id="pagoHora" placeholder="Pago por hora">
-                <button class="btnAction" onclick="calcularPago()">Calcular</button>
+            <div class="card">
+                <h2>Calcular Pago</h2>
+                <div id="controlPago">
+                    <input type="date" id="fechaPagoInicio">
+                    <input type="date" id="fechaPagoFin">
+                    <input type="number" id="pagoHora" placeholder="Pago por hora">
+                    <button class="btnAction" onclick="calcularPago()">Calcular</button>
+                </div>
+                <div id="resultadoPago"></div>
             </div>
-            <div id="resultadoPago"></div>
-        </div>
-    `;
-}
+        `;
+    }
 
 
 else if(section === "Productos") {
