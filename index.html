@@ -511,31 +511,51 @@ function loadSection(section) {
             </div>
         `;
     } else if(section === "Empleados") {
-        view.innerHTML = `
-            <h1 class="title">Empleados</h1>
-            <div class="card">
-                <h2>Asistencias</h2>
-    <div id="controlEmpleado">
-    <input type="date" id="fechaRegistroInicio">
-    <input type="date" id="fechaRegistroFin">
-    <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
-    <button class="btnAction" onclick="exportarAsistencias()">Exportar Excel</button>
-</div>
-<div id="tablaRegistros"></div>
+    view.innerHTML = `
+        <h1 class="title">Empleados</h1>
 
+        <!-- CARD 1 - CONSULTAR ASISTENCIAS -->
+        <div class="card">
+            <h2>Asistencias</h2>
+            <div id="controlEmpleado">
+                <input type="date" id="fechaRegistroInicio">
+                <input type="date" id="fechaRegistroFin">
+                <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
+                <button class="btnAction" onclick="exportarAsistencias()">Exportar Excel</button>
             </div>
-            <div class="card">
-                <h2>Calcular Pago</h2>
-                <div id="controlPago">
-                    <input type="date" id="fechaPagoInicio">
-                    <input type="date" id="fechaPagoFin">
-                    <input type="number" id="pagoHora" placeholder="Pago por hora">
-                    <button class="btnAction" onclick="calcularPago()">Calcular</button>
-                </div>
-                <div id="resultadoPago"></div>
+            <div id="tablaRegistros"></div>
+        </div>
+
+        <!-- MODAL OCULTO -->
+        <div id="modalEdicion" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h2>Modificar Horas</h2>
+
+                <label>Hora Entrada</label>
+                <input type="time" id="modEntrada">
+
+                <label>Hora Salida</label>
+                <input type="time" id="modSalida">
+
+                <button class="btnAction" onclick="guardarModificacion()">Guardar Cambios</button>
+                <button class="btnAction" style="background:#7f8c8d" onclick="cerrarModal()">Cancelar</button>
             </div>
-        `;
-    }
+        </div>
+
+        <!-- CARD 2 - CALCULAR PAGO -->
+        <div class="card">
+            <h2>Calcular Pago</h2>
+            <div id="controlPago">
+                <input type="date" id="fechaPagoInicio">
+                <input type="date" id="fechaPagoFin">
+                <input type="number" id="pagoHora" placeholder="Pago por hora">
+                <button class="btnAction" onclick="calcularPago()">Calcular</button>
+            </div>
+            <div id="resultadoPago"></div>
+        </div>
+    `;
+}
+
 
 
 else if(section === "Productos") {
@@ -2025,6 +2045,25 @@ async function enviarGasto() {
 function cerrarModal() {
     document.getElementById("modalEdicion").style.display = "none";
 }*/
+function abrirModal(id) {
+    const registro = registros.find(r => r.ID === id); // asegúrate de que tu objeto tenga la propiedad ID
+    if(!registro) return alert("Registro no encontrado");
+
+    // llenar inputs con los valores actuales
+    document.getElementById("modEntrada").value = registro.HoraEntrada || "";
+    document.getElementById("modSalida").value = registro.HoraSalida || "";
+
+    // guardar el id en el modal para usar al guardar
+    document.getElementById("modalEdicion").dataset.registroId = id;
+
+    document.getElementById("modalEdicion").style.display = "flex";
+}
+
+    function cerrarModal() {
+    document.getElementById("modalEdicion").style.display = "none";
+    document.getElementById("modalEdicion").dataset.registroId = "";
+}
+
 
 
     
