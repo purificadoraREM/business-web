@@ -3,7 +3,7 @@ o<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM2</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -526,22 +526,7 @@ function loadSection(section) {
             <div id="tablaRegistros"></div>
         </div>
 
-        <!-- MODAL OCULTO -->
-        <div id="modalEdicion" class="modal" style="display:none;">
-            <div class="modal-content">
-                <h2>Modificar Horas</h2>
-
-                <label>Hora Entrada</label>
-                <input type="time" id="modEntrada">
-
-                <label>Hora Salida</label>
-                <input type="time" id="modSalida">
-
-                <button class="btnAction" onclick="guardarModificacion()">Guardar Cambios</button>
-                <button class="btnAction" style="background:#c0392b" onclick="borrarRegistro()">Borrar</button>
-                <button class="btnAction" style="background:#7f8c8d" onclick="cerrarModal()">Cancelar</button>
-            </div>
-        </div>
+      
 
         <!-- CARD 2 - CALCULAR PAGO -->
         <div class="card">
