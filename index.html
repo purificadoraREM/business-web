@@ -3,7 +3,7 @@ o<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1002,58 +1002,60 @@ async function cargarRegistros() {
     }
 
     // 👉 FILTRO DEFINITIVO (compara strings YYYY-MM-DD)
-    const filtrados = registros.filter(r => 
-        r.Fecha >= fi && r.Fecha <= ff
-    );
+  const filtrados = registros
+    .filter(r => r.Fecha >= fi && r.Fecha <= ff)
+    .map(r => ({
+        id: r.ID,              // ← IMPORTANTE
+        empleado: r.Nombre,
+        fecha: r.Fecha,
+        entrada: r.HoraEntrada,
+        salida: r.HoraSalida,
+        estado: r.HoraSalida ? "Salida" : "Entrada"
+    }));
+
 
     // Guardar para exportar si lo usas
-    window.registrosFiltradosExport = filtrados;
+    window.registros = filtrados;
+
 
     // Dibujar tabla
-    let html = `
-        <table>
-            <tr>
-               <th>ID</th>
-                <th>Empleado</th>
-                <th>Fecha</th>
-                <th>Entrada</th>
-                <th>Salida</th>
-                <th>Horas trabajadas</th>
-                <th>Accion</th>
-            </tr> 
+   let html = `
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Empleado</th>
+            <th>Fecha</th>
+            <th>Entrada</th>
+            <th>Salida</th>
+            <th>Horas trabajadas</th>
+            <th>Acción</th>
+        </tr>
+`;
 
-            
+filtrados.forEach(e => {
+    const calc = calcularHoras(e.entrada, e.salida);
+    const horasTxt = calc.horas === null ? "—" :
+                     `${calc.horas}:${String(calc.minutos).padStart(2,'0')}`;
+
+    html += `
+        <tr>
+            <td>${e.id}</td>
+            <td>${e.empleado}</td>
+            <td>${e.fecha}</td>
+            <td>${e.entrada}</td>
+            <td>${e.salida ?? "NULL"}</td>
+            <td>${horasTxt}</td>
+            <td>
+                <button class="btnAction" onclick="abrirModal(${e.id})">Editar</button>
+                <button class="btnAction" style="background:#c0392b" onclick="confirmarBorrado(${e.id})">Borrar</button>
+            </td>
+        </tr>
     `;
+});
 
-    filtrados.forEach(e => {
-        const calc = calcularHoras(e.HoraEntrada, e.HoraSalida);
-        const horasTxt = calc.horas === null ? "—" : `${calc.horas}:${String(calc.minutos).padStart(2,'0')}`;
+html += "</table>";
+document.getElementById("tablaRegistros").innerHTML = html;
 
-        html += `
-          
-
-            <tr>
-    <td>${e.ID}</td>
-    <td>${e.Nombre}</td>
-    <td>${e.Fecha}</td>
-    <td>${e.HoraEntrada}</td>
-    <td>${e.HoraSalida ?? "NULL"}</td>
-    <td>${horasTxt}</td>
-    <td>
-        
-     <button class="btnAction" onclick="abrirModal(${e.id})">Editar</button>
-        <button class="btnAction" style="background:#c0392b" onclick="confirmarBorrado(${e.id})">Borrar</button>  
-        
-     
-
-    </td>
-</tr>
-
-        `
-    });
-
-    html += "</table>";
-    document.getElementById("tablaRegistros").innerHTML = html;
 }
 
 
