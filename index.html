@@ -3,7 +3,7 @@ o<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM2</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1974,6 +1974,20 @@ async function enviarGasto() {
 /* ============================================================
    fin
 ============================================================ */  
+ 
+async function cargarRegistros() {
+    const inicio = document.getElementById("fechaRegistroInicio").value;
+    const fin = document.getElementById("fechaRegistroFin").value;
+
+    const response = await fetch("tus_datos.json"); // ejemplo
+    const data = await response.json();
+
+    registros = data; // ← ESTA ES LA CLAVE
+
+    renderTablaAsistencias(registros);
+}
+
+    
 
     function renderTablaAsistencias(lista) {
     let html = `
@@ -2006,8 +2020,14 @@ async function enviarGasto() {
     document.getElementById("tablaRegistros").innerHTML = html;
 }
     function abrirModal(id) {
-    // Cargar datos del registro desde tu lista o desde el servidor
+    console.log("Abriendo modal ID:", id);
+
     const r = registros.find(x => x.id === id);
+
+    if (!r) {
+        alert("Error: ese registro no existe");
+        return;
+    }
 
     document.getElementById("modId").value = r.id;
     document.getElementById("modEmpleado").value = r.empleado;
@@ -2016,6 +2036,7 @@ async function enviarGasto() {
 
     document.getElementById("modalEdicion").style.display = "flex";
 }
+
 
 function cerrarModal() {
     document.getElementById("modalEdicion").style.display = "none";
