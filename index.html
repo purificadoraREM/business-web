@@ -89,6 +89,27 @@ button.btnAction:hover {
     background: #0086bd;
 }
 
+    .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px;
+    width: 380px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px #0003;
+}
+
+
 /* =========================================================
    ESTILOS GASTOS PREMIUM — TOTALMENTE AISLADOS
 ========================================================= */
@@ -490,31 +511,61 @@ function loadSection(section) {
             </div>
         `;
     } else if(section === "Empleados") {
-        view.innerHTML = `
-            <h1 class="title">Empleados</h1>
-            <div class="card">
-                <h2>Asistencias</h2>
-    <div id="controlEmpleado">
-    <input type="date" id="fechaRegistroInicio">
-    <input type="date" id="fechaRegistroFin">
-    <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
-    <button class="btnAction" onclick="exportarAsistencias()">Exportar Excel</button>
-</div>
-<div id="tablaRegistros"></div>
+    view.innerHTML = `
+        <h1 class="title">Empleados</h1>
 
+        <!-- CARD 1 - CONSULTAR ASISTENCIAS -->
+        <div class="card">
+            <h2>Asistencias</h2>
+            <div id="controlEmpleado">
+                <input type="date" id="fechaRegistroInicio">
+                <input type="date" id="fechaRegistroFin">
+                <button class="btnAction" onclick="cargarRegistros()">Buscar</button>
+                <button class="btnAction" onclick="exportarAsistencias()">Exportar Excel</button>
             </div>
-            <div class="card">
-                <h2>Calcular Pago</h2>
-                <div id="controlPago">
-                    <input type="date" id="fechaPagoInicio">
-                    <input type="date" id="fechaPagoFin">
-                    <input type="number" id="pagoHora" placeholder="Pago por hora">
-                    <button class="btnAction" onclick="calcularPago()">Calcular</button>
-                </div>
-                <div id="resultadoPago"></div>
+            <div id="tablaRegistros"></div>
+        </div>
+
+        <!-- MODAL OCULTO -->
+        <div id="modalEdicion" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h2>Modificar / Borrar Registro</h2>
+
+                <label>ID</label>
+                <input type="text" id="modId" readonly>
+
+                <label>Empleado</label>
+                <input type="text" id="modEmpleado">
+
+                <label>Fecha</label>
+                <input type="datetime-local" id="modFecha">
+
+                <label>Estado</label>
+                <select id="modEstado">
+                    <option value="Entrada">Entrada</option>
+                    <option value="Salida">Salida</option>
+                </select>
+
+                <button class="btnAction" onclick="guardarModificacion()">Guardar Cambios</button>
+                <button class="btnAction" style="background:#c0392b" onclick="borrarRegistro()">Borrar</button>
+                <button class="btnAction" style="background:#7f8c8d" onclick="cerrarModal()">Cancelar</button>
             </div>
-        `;
-    }
+        </div>
+
+        <!-- CARD 2 - CALCULAR PAGO -->
+        <div class="card">
+            <h2>Calcular Pago</h2>
+            <div id="controlPago">
+                <input type="date" id="fechaPagoInicio">
+                <input type="date" id="fechaPagoFin">
+                <input type="number" id="pagoHora" placeholder="Pago por hora">
+                <button class="btnAction" onclick="calcularPago()">Calcular</button>
+            </div>
+            <div id="resultadoPago"></div>
+        </div>
+    `;
+}
+
 
 else if(section === "Productos") {
     view.innerHTML = `
@@ -1923,7 +1974,54 @@ async function enviarGasto() {
 /* ============================================================
    fin
 ============================================================ */  
-    
+
+    function renderTablaAsistencias(lista) {
+    let html = `
+        <table class="tabla">
+            <tr>
+                <th>ID</th>
+                <th>Empleado</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+    `;
+
+    lista.forEach(r => {
+        html += `
+            <tr>
+                <td>${r.id}</td>
+                <td>${r.empleado}</td>
+                <td>${r.fecha}</td>
+                <td>${r.estado}</td>
+                <td>
+                    <button class="btnAction" onclick="abrirModal(${r.id})">Editar</button>
+                    <button class="btnAction" style="background:#c0392b" onclick="confirmarBorrado(${r.id})">Borrar</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += `</table>`;
+    document.getElementById("tablaRegistros").innerHTML = html;
+}
+    function abrirModal(id) {
+    // Cargar datos del registro desde tu lista o desde el servidor
+    const r = registros.find(x => x.id === id);
+
+    document.getElementById("modId").value = r.id;
+    document.getElementById("modEmpleado").value = r.empleado;
+    document.getElementById("modFecha").value = r.fecha.replace(" ", "T");
+    document.getElementById("modEstado").value = r.estado;
+
+    document.getElementById("modalEdicion").style.display = "flex";
+}
+
+function cerrarModal() {
+    document.getElementById("modalEdicion").style.display = "none";
+}
+
+
     
 </script>    
 </body>
