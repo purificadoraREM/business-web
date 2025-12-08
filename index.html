@@ -3,7 +3,7 @@ o<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1024,25 +1024,24 @@ async function cargarRegistros() {
 `;
 
 filtrados.forEach(e => {
-    const calc = calcularHoras(e.entrada, e.salida);
-    const horasTxt = calc.horas === null ? "—" :
-                     `${calc.horas}:${String(calc.minutos).padStart(2,'0')}`;
+    const calc = calcularHoras(e.HoraEntrada, e.HoraSalida);
+    const horasTxt = calc.horas === null ? "—" : `${calc.horas}:${String(calc.minutos).padStart(2,'0')}`;
 
     html += `
         <tr>
-            <td>${e.id}</td>
-            <td>${e.empleado}</td>
-            <td>${e.fecha}</td>
-            <td>${e.entrada}</td>
-            <td>${e.salida ?? "NULL"}</td>
+            <td>${e.ID}</td>
+            <td>${e.Nombre}</td>
+            <td>${e.Fecha}</td>
+            <td>${e.HoraEntrada}</td>
+            <td>${e.HoraSalida ?? "—"}</td>
             <td>${horasTxt}</td>
             <td>
-                <button class="btnAction" onclick="abrirModal(${e.id})">Editar</button>
-                <button class="btnAction" style="background:#c0392b" onclick="confirmarBorrado(${e.id})">Borrar</button>
+                <button class="btnAction" onclick="abrirModal(${e.ID})">Editar</button>
             </td>
         </tr>
     `;
 });
+
 
 html += "</table>";
 document.getElementById("tablaRegistros").innerHTML = html;
