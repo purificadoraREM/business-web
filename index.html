@@ -3,7 +3,7 @@ o<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -526,31 +526,24 @@ function loadSection(section) {
             <div id="tablaRegistros"></div>
         </div>
 
+       
         <!-- MODAL OCULTO -->
-        <div id="modalEdicion" class="modal" style="display:none;">
-            <div class="modal-content">
-                <h2>Modificar / Borrar Registro</h2>
+<div id="modalEdicion" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h2>Modificar Horas</h2>
 
-                <label>ID</label>
-                <input type="text" id="modId" readonly>
+        <label>Hora Entrada</label>
+        <input type="time" id="modEntrada">
 
-                <label>Empleado</label>
-                <input type="text" id="modEmpleado">
+        <label>Hora Salida</label>
+        <input type="time" id="modSalida">
 
-                <label>Fecha</label>
-                <input type="datetime-local" id="modFecha">
+        <button class="btnAction" onclick="guardarModificacion()">Guardar Cambios</button>
+        <button class="btnAction" style="background:#c0392b" onclick="borrarRegistro()">Borrar</button>
+        <button class="btnAction" style="background:#7f8c8d" onclick="cerrarModal()">Cancelar</button>
+    </div>
+</div>
 
-                <label>Estado</label>
-                <select id="modEstado">
-                    <option value="Entrada">Entrada</option>
-                    <option value="Salida">Salida</option>
-                </select>
-
-                <button class="btnAction" onclick="guardarModificacion()">Guardar Cambios</button>
-                <button class="btnAction" style="background:#c0392b" onclick="borrarRegistro()">Borrar</button>
-                <button class="btnAction" style="background:#7f8c8d" onclick="cerrarModal()">Cancelar</button>
-            </div>
-        </div>
 
         <!-- CARD 2 - CALCULAR PAGO -->
         <div class="card">
@@ -2023,15 +2016,24 @@ async function enviarGasto() {
     html += `</table>`;
     document.getElementById("tablaRegistros").innerHTML = html;
 }
-    function abrirModal(id) {
-    console.log("Abriendo modal ID:", id);
-
-    const r = registros.find(x => x.id === id);
+   function abrirModal(id) {
+    const r = window.registros.find(x => x.id === id);
 
     if (!r) {
         alert("Error: ese registro no existe");
         return;
     }
+
+    // Solo modificaremos horas
+    document.getElementById("modEntrada").value = r.entrada ?? "";
+    document.getElementById("modSalida").value = r.salida ?? "";
+
+    // Guardar el ID del registro en un atributo para usarlo luego
+    document.getElementById("modalEdicion").dataset.registroId = id;
+
+    document.getElementById("modalEdicion").style.display = "flex";
+}
+
 
     document.getElementById("modId").value = r.id;
     document.getElementById("modEmpleado").value = r.empleado;
