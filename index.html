@@ -2045,12 +2045,12 @@ function cerrarModal() {
     document.getElementById("modalEdicion").style.display = "none";
 }*/
 function abrirModal(id) {
-    const registro = registros.find(r => r.ID === id); // asegúrate de que tu objeto tenga la propiedad ID
+    const registro = registros.find(r => r.id === id); // asegúrate de que tu objeto tenga la propiedad ID
     if(!registro) return alert("Registro no encontrado");
 
     // llenar inputs con los valores actuales
-    document.getElementById("modEntrada").value = registro.HoraEntrada || "";
-    document.getElementById("modSalida").value = registro.HoraSalida || "";
+    document.getElementById("modEntrada").value = registro.entrada || "";
+    document.getElementById("modSalida").value = registro.salida || "";
 
     // guardar el id en el modal para usar al guardar
     document.getElementById("modalEdicion").dataset.registroId = id;
