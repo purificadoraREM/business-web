@@ -1024,7 +1024,7 @@ async function cargarRegistros() {
 `;
 
 filtrados.forEach(e => {
-    const calc = calcularHoras(e.HoraEntrada, e.HoraSalida);
+    const calc = calcularHoras(e.entrada, e.salida);
     const horasTxt = calc.horas === null ? "—" : `${calc.horas}:${String(calc.minutos).padStart(2,'0')}`;
 
     html += `
