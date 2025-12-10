@@ -511,7 +511,8 @@ function loadSection(section) {
                 </div>
             </div>
         `;
-    } else if(section === "Empleados") {
+    } 
+}else if(section === "Empleados") {
     view.innerHTML = `
         <h1 class="title">Empleados</h1>
 
@@ -528,26 +529,20 @@ function loadSection(section) {
         </div>
 
         <!-- MODAL OCULTO -->
-         <div id ="modalEdicion" class "modal" style ="display:none;">
-         <div class="modal-content">
-        <h2>Modificar Horas</h2>
+        <div id="modalEdicion" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h2>Modificar Horas</h2>
 
-        
-            <label>Hora Entrada</label>
-            <input type="time" id="modEntrada">
-        
+                <label>Hora Entrada</label>
+                <input type="time" id="modEntrada">
 
-        
-            <label>Hora Salida</label>
-            <input type="time" id="modSalida">
-     
+                <label>Hora Salida</label>
+                <input type="time" id="modSalida">
 
-      
-            <button class="btnAction" onclick="guardarModificacion()">Guardar Cambios</button>
-            <button class="btnAction style = background:#7f8c8d" onclick="cerrarModal()">Cancelar</button>
-        
-    </div>
-  </div>
+                <button class="btnAction" onclick="guardarModificacion()">Guardar Cambios</button>
+                <button class="btnAction" style="background:#7f8c8d" onclick="cerrarModal()">Cancelar</button>
+            </div>
+        </div>
 
         <!-- CARD 2 - CALCULAR PAGO -->
         <div class="card">
