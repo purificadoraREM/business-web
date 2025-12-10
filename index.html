@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -1984,67 +1984,7 @@ async function enviarGasto() {
    fin
 ============================================================ */  
  
-   /* function renderTablaAsistencias(lista) {
-    let html = `
-        <table class="tabla">
-            <tr>
-                <th>ID</th>
-                <th>Empleado</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-    `;
-
-    lista.forEach(r => {
-        html += `
-            <tr>
-                <td>${r.id}</td>
-                <td>${r.empleado}</td>
-                <td>${r.fecha}</td>
-                <td>${r.estado}</td>
-                <td>
-                    <button class="btnAction" onclick="abrirModal(${r.id})">Editar</button>
-                    <button class="btnAction" style="background:#c0392b" onclick="confirmarBorrado(${r.id})">Borrar</button>
-                </td>
-            </tr>
-        `;
-    });
-
-    html += `</table>`;
-    document.getElementById("tablaRegistros").innerHTML = html;
-}
-   function abrirModal(id) {
-    const r = window.registros.find(x => x.id === id);
-
-    if (!r) {
-        alert("Error: ese registro no existe");
-        return;
-    }
-
-    // Solo modificaremos horas
-    document.getElementById("modEntrada").value = r.entrada ?? "";
-    document.getElementById("modSalida").value = r.salida ?? "";
-
-    // Guardar el ID del registro en un atributo para usarlo luego
-    document.getElementById("modalEdicion").dataset.registroId = id;
-
-    document.getElementById("modalEdicion").style.display = "flex";
-}
-
-
-    document.getElementById("modId").value = r.id;
-    document.getElementById("modEmpleado").value = r.empleado;
-    document.getElementById("modFecha").value = r.fecha.replace(" ", "T");
-    document.getElementById("modEstado").value = r.estado;
-
-    document.getElementById("modalEdicion").style.display = "flex";
-}
-
-
-function cerrarModal() {
-    document.getElementById("modalEdicion").style.display = "none";
-}*/
+   
 function abrirModal(id) {
     const registro = registros.find(r => r.id === id); // asegúrate de que tu objeto tenga la propiedad ID
     if(!registro) return alert("Registro no encontrado");
