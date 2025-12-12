@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2063,9 +2063,18 @@ async function guardarModificacion() {
         return;
     }
 
+     // Buscar registro completo
+    const registro = window.registros.find(r => r.id === Number(id));
+    if (!registro) {
+        alert("Registro no encontrado");
+        return;
+    }
+    
     const payload = {
         Tabla: "RegEmpleados",   // obligatorio para el Worker
         ID: Number(id),
+        Nombre: registro.empleado,
+        Fecha: registro.fecha,
         HoraEntrada: nuevaEntrada || null,
         HoraSalida: nuevaSalida || null,
         Movimiento: "UPDATE"     // <--- esto indica al Worker que es una modificación
