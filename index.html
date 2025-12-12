@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2027,9 +2027,9 @@ function abrirModal(id) {
     document.getElementById("modSalida").value = registro.salida || "";
 
     // guardar el id en el modal para usar al guardar
-    document.getElementById("modalEdicion").dataset.registroId = id;
-
-    document.getElementById("modalEdicion").style.display = "flex";
+  document.getElementById("modEntrada").value = formatearHora(registro.entrada);
+    
+    document.getElementById("modSalida").value = formatearHora(registro.salida);
 }
 
     function cerrarModal() {
@@ -2037,6 +2037,10 @@ function abrirModal(id) {
     document.getElementById("modalEdicion").dataset.registroId = "";
 }
 
+    function formatearHora(hora) {
+    if (!hora) return "";
+    return hora.substring(0, 5); // "19:17:22" → "19:17"
+}
 
 
     
