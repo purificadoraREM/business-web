@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2063,23 +2063,27 @@ async function guardarModificacion() {
         return;
     }
 
-    // Buscar el registro completo
+    // Buscar registro completo
     const registro = window.registros.find(r => r.id === Number(id));
     if (!registro) {
         alert("Registro no encontrado");
         return;
     }
 
-    // Formatear las fechas al formato YYYY-MM-DD
+    // Función para formatear las fechas en el formato correcto (YYYY-MM-DD)
     const formatDate = (date) => {
         if (!date) return ""; // Si la fecha no está disponible, retornamos una cadena vacía
         const d = new Date(date); // Crear un objeto Date
         return d.toISOString().split('T')[0]; // Extraemos solo la parte YYYY-MM-DD
     };
 
-    // Obtener las fechas formateadas
+    // Formatear las fechas correctamente
     const fechaEntrada = formatDate(nuevaEntrada || registro.entrada);
     const fechaSalida = formatDate(nuevaSalida || registro.salida);
+
+    // Mostrar las fechas antes de enviar para ver si todo está bien
+    console.log("Fecha de entrada formateada:", fechaEntrada);
+    console.log("Fecha de salida formateada:", fechaSalida);
 
     const payload = {
         Tabla: "RegEmpleados",
@@ -2105,7 +2109,6 @@ async function guardarModificacion() {
         });
 
         const result = await response.json();
-
         console.log("RESPUESTA DEL WORKER:", result);
 
         if (response.ok) {
@@ -2121,6 +2124,7 @@ async function guardarModificacion() {
         alert("No se pudo conectar con el servidor al actualizar las horas.");
     }
 }
+
 
 
     
