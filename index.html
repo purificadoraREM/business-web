@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2047,14 +2047,6 @@ function abrirModal(id) {
     return hora.substring(0, 5); // "19:17:22" → "19:17"
 }
 
-// Función para formatear las fechas en el formato correcto (YYYY-MM-DD)
-const formatDate = (date) => {
-    if (!date) return ""; // Si la fecha no está disponible, retornamos una cadena vacía
-    const d = new Date(date); // Crear un objeto Date
-    if (isNaN(d.getTime())) return ""; // Verificar si la fecha es válida
-    return d.toISOString().split('T')[0]; // Extraemos solo la parte YYYY-MM-DD
-};
-
 async function guardarModificacion() {
     const id = document.getElementById("modalEdicion").dataset.registroId;
     const nuevaEntrada = document.getElementById("modEntrada").value;
@@ -2077,6 +2069,10 @@ async function guardarModificacion() {
         alert("Registro no encontrado");
         return;
     }
+
+    // Verificar que las fechas se están capturando correctamente
+    console.log("Fecha de entrada capturada:", nuevaEntrada);
+    console.log("Fecha de salida capturada:", nuevaSalida);
 
     // Formatear las fechas correctamente usando la nueva función
     const fechaEntrada = formatDate(nuevaEntrada || registro.entrada);
