@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2070,14 +2070,7 @@ async function guardarModificacion() {
         return;
     }
 
-    // Función para formatear las fechas en el formato correcto (YYYY-MM-DD)
-    const formatDate = (date) => {
-        if (!date) return ""; // Si la fecha no está disponible, retornamos una cadena vacía
-        const d = new Date(date); // Crear un objeto Date
-        return d.toISOString().split('T')[0]; // Extraemos solo la parte YYYY-MM-DD
-    };
-
-    // Formatear las fechas correctamente
+    // Formatear las fechas correctamente usando la nueva función
     const fechaEntrada = formatDate(nuevaEntrada || registro.entrada);
     const fechaSalida = formatDate(nuevaSalida || registro.salida);
 
@@ -2124,6 +2117,7 @@ async function guardarModificacion() {
         alert("No se pudo conectar con el servidor al actualizar las horas.");
     }
 }
+
 
 
 
