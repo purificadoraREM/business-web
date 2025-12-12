@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2042,7 +2042,19 @@ function abrirModal(id) {
     document.getElementById("modalEdicion").dataset.registroId = "";
 }
 
- // Función para formatear las fechas en el formato correcto (YYYY-MM-DD)
+// Función para formatear la hora en el formato HH:mm
+function formatearHora(hora) {
+    if (!hora) return "";  // Si no hay hora, retornamos una cadena vacía
+
+    // La hora debe tener el formato 'HH:mm:ss' para que funcione correctamente
+    const partes = hora.split(":");
+    if (partes.length < 2) return "";  // Si la hora no está bien formateada, devolvemos cadena vacía
+
+    // Retornamos la hora formateada como HH:mm
+    return `${partes[0]}:${partes[1]}`;
+}
+
+// Función para formatear las fechas en el formato correcto (YYYY-MM-DD)
 const formatDate = (date) => {
     if (!date) return ""; // Si la fecha no está disponible, retornamos una cadena vacía
     const d = new Date(date); // Crear un objeto Date
@@ -2050,6 +2062,28 @@ const formatDate = (date) => {
     return d.toISOString().split('T')[0]; // Extraemos solo la parte YYYY-MM-DD
 };
 
+// Función para abrir el modal con la información del registro
+function abrirModal(id) {
+    const registro = window.registros.find(r => r.id === id); // asegurarnos de que el objeto tenga la propiedad ID
+    if (!registro) return alert("Registro no encontrado");
+
+    // Llenar los inputs con los valores actuales y formatear las horas
+    document.getElementById("modEntrada").value = formatearHora(registro.entrada);  // Usamos formatearHora aquí
+    document.getElementById("modSalida").value = formatearHora(registro.salida);    // Usamos formatearHora aquí
+
+    // Guardar el id en el modal para usar al guardar
+    document.getElementById("modalEdicion").dataset.registroId = id;
+
+    document.getElementById("modalEdicion").style.display = "flex";
+}
+
+// Función para cerrar el modal
+function cerrarModal() {
+    document.getElementById("modalEdicion").style.display = "none";
+    document.getElementById("modalEdicion").dataset.registroId = "";
+}
+
+// Función para guardar las modificaciones
 async function guardarModificacion() {
     const id = document.getElementById("modalEdicion").dataset.registroId;
     const nuevaEntrada = document.getElementById("modEntrada").value;
@@ -2073,25 +2107,21 @@ async function guardarModificacion() {
         return;
     }
 
-    // Verificar que las fechas se están capturando correctamente
-    console.log("Fecha de entrada capturada:", nuevaEntrada);
-    console.log("Fecha de salida capturada:", nuevaSalida);
-
-    // Formatear las fechas correctamente usando la función formatDate
-    const fechaEntrada = formatDate(nuevaEntrada || registro.entrada);
-    const fechaSalida = formatDate(nuevaSalida || registro.salida);
+    // Usar las nuevas horas si fueron modificadas, de lo contrario usar las horas originales
+    const fechaEntrada = nuevaEntrada || registro.entrada || "00:00";  // Si no se cambió, usamos el valor actual o "00:00"
+    const fechaSalida = nuevaSalida || registro.salida || "00:00";     // Lo mismo para HoraSalida
 
     // Mostrar las fechas antes de enviar para ver si todo está bien
-    console.log("Fecha de entrada formateada:", fechaEntrada);
-    console.log("Fecha de salida formateada:", fechaSalida);
+    console.log("Fecha de entrada capturada:", fechaEntrada);
+    console.log("Fecha de salida capturada:", fechaSalida);
 
     const payload = {
         Tabla: "RegEmpleados",
         ID: Number(id),
         Nombre: registro.empleado,
         Fecha: formatDate(registro.fecha), // Formateamos la fecha original también
-        HoraEntrada: fechaEntrada,         // Usamos la fecha formateada
-        HoraSalida: fechaSalida,           // Usamos la fecha formateada
+        HoraEntrada: fechaEntrada,         // Usamos la nueva hora si se modificó
+        HoraSalida: fechaSalida,           // Usamos la nueva hora si se modificó
         Movimiento: "UPDATE"
     };
 
@@ -2124,7 +2154,6 @@ async function guardarModificacion() {
         alert("No se pudo conectar con el servidor al actualizar las horas.");
     }
 }
-
 
 
 
