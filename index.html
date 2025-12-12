@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2023,13 +2023,13 @@ function abrirModal(id) {
     if(!registro) return alert("Registro no encontrado");
 
     // llenar inputs con los valores actuales
-    document.getElementById("modEntrada").value = registro.entrada || "";
-    document.getElementById("modSalida").value = registro.salida || "";
+   document.getElementById("modEntrada").value = formatearHora(registro.entrada);
+    document.getElementById("modSalida").value = formatearHora(registro.salida);
 
     // guardar el id en el modal para usar al guardar
-  document.getElementById("modEntrada").value = formatearHora(registro.entrada);
-    
-    document.getElementById("modSalida").value = formatearHora(registro.salida);
+    document.getElementById("modalEdicion").dataset.registroId = id;
+
+    document.getElementById("modalEdicion").style.display = "flex";
 }
 
     function cerrarModal() {
