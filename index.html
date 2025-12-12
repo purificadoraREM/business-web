@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -564,8 +564,10 @@ function loadSection(section) {
             <input type="time" id="modEntrada">
         </div>
 
-                <label>Hora Salida</label>
-                <input type="time" id="modSalida">
+                <div class="form-row1">
+            <label for="modSalida">Hora Salida</label>
+            <input type="time" id="modSalida">
+        </div>
 
                 <button class="btnAction1" onclick="guardarModificacion()">Guardar Cambios</button>
                 <button class="btnAction1" style="background:#7f8c8d" onclick="cerrarModal()">Cancelar</button>
