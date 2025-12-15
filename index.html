@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2155,6 +2155,59 @@ async function guardarModificacion() {
     }
 }
 
+async function borrarRegistro(id) {
+    if (!confirm("¿Seguro que deseas borrar este registro?")) return;
+
+    const apiKey = prompt("Ingresa tu clave de seguridad:");
+    if (!apiKey) {
+        alert("Clave requerida");
+        return;
+    }
+
+    // Buscar el registro completo (igual que UPDATE)
+    const registro = window.registros.find(r => r.id === Number(id));
+    if (!registro) {
+        alert("Registro no encontrado");
+        return;
+    }
+
+    const payload = {
+        Tabla: "RegEmpleados",
+        ID: Number(id),
+        Nombre: registro.empleado,
+        Fecha: formatDate(registro.fecha),
+        HoraEntrada: registro.entrada || "00:00",
+        HoraSalida: registro.salida || "00:00",
+        Movimiento: "DELETE"
+    };
+
+    console.log("Payload DELETE:", payload);
+
+    try {
+        const response = await fetch("https://rem.d5hx88s66m.workers.dev", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-api-key": apiKey
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        console.log("RESPUESTA DELETE:", result);
+
+        if (response.ok) {
+            alert("Registro eliminado correctamente");
+            cargarRegistros(); // refrescar tabla
+        } else {
+            alert("Error al borrar: " + (result.error || result));
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("No se pudo conectar con el servidor al borrar el registro.");
+    }
+}
 
 
 
