@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -801,21 +801,56 @@ else if (section === "Gastos") {
 else if (section === "Registrarventa") {
     view.innerHTML = `
         <div class="gastos-portal gastos-premium">
+
             <h1 class="title">💼 Registrar Ventas</h1>
 
             <div class="card form-card">
                 <h2 class="card-title">Nueva Venta</h2>
 
+                <!-- CLIENTE -->
                 <label for="clienteSelect">Cliente</label>
                 <select id="clienteSelect">
                     <option value="">⏳ Cargando clientes...</option>
                 </select>
+
+                <!-- ARTICULO -->
+                <label for="articuloSelect">Artículo</label>
+                <select id="articuloSelect">
+                    <option value="">Seleccione un artículo</option>
+                </select>
+
+                <!-- TIPO DE PAGO -->
+                <label for="tipoPagoSelect">Tipo de pago</label>
+                <select id="tipoPagoSelect">
+                    <option value="">Seleccione tipo de pago</option>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Tarjeta">Tarjeta</option>
+                    <option value="Crédito">Crédito</option>
+                </select>
+
+                <!-- CANTIDAD -->
+                <label for="cantidadInput">Cantidad</label>
+                <input 
+                    type="number" 
+                    id="cantidadInput" 
+                    min="1" 
+                    step="1" 
+                    placeholder="Ej. 1, 2, 3..."
+                >
+
+                <!-- BOTON (opcional por ahora) -->
+                <button class="btn-primary" disabled>
+                    Guardar Venta
+                </button>
+
             </div>
         </div>
     `;
 
-    cargarClientesCombo(); // 👈 cargar clientes
+    cargarClientesCombo(); // 👈 ya existente
 }
+
     }
 
 /* ============================================================
