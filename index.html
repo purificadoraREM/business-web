@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -507,7 +507,7 @@ th, td {
     <div class="btn-menu" onclick="loadSection('Inventario'); toggleMenu();">Inventario</div>    
     <div class="btn-menu" onclick="loadSection('Gastos'); toggleMenu();">Gastos</div>
     <div class="btn-menu" onclick="loadSection('Registrarventa'); toggleMenu();">Registrar Venta</div>
-     <div class="btn-menu" onclick="loadSection('Registrarproducto'); toggleMenu();">Registrar Producto</div>
+  
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
 
@@ -843,7 +843,6 @@ else if (section === "Registrarventa") {
                     <option value="Efectivo">Efectivo</option>
                     <option value="Transferencia">Transferencia</option>
                     <option value="Tarjeta">Tarjeta</option>
-                    
                 </select>
 
                 <!-- CANTIDAD -->
@@ -890,97 +889,11 @@ else if (section === "Registrarventa") {
         </div>
     `;
 
+    // Cargar clientes y artículos
     cargarClientesCombo();
-    cargarArticulosCombo();
-}else if (section === "Registrarproducto") {
-    view.innerHTML = `
-        <div class="gastos-portal gastos-premium">
-
-            <h1 class="title">📦 Registrar Artículos</h1>
-
-            <!-- PANEL FORMULARIO -->
-            <div class="card form-card">
-                <h2 class="card-title">Nuevo Artículo</h2>
-
-                <!-- ARTICULO -->
-                <label for="articuloInput">Artículo</label>
-                <input 
-                    type="text" 
-                    id="articuloInput" 
-                    placeholder="Nombre del artículo"
-                >
-
-                <!-- PRECIO -->
-                <label for="precioInput">Precio</label>
-                <input 
-                    type="number" 
-                    id="precioInput"
-                    min="0"
-                    step="0.01"
-                    placeholder="Ej. 25.00"
-                >
-
-                <!-- GENERA IVA -->
-                <label for="generaIvaSelect">¿Genera IVA?</label>
-                <select id="generaIvaSelect">
-                    <option value="">Seleccione opción</option>
-                    <option value="SI">Sí</option>
-                    <option value="NO">No</option>
-                </select>
-
-                <!-- CLAVE + BOTON -->
-                <div class="form-row">
-                    <div class="form-col">
-                        <label for="apiKeyInput">Clave de seguridad</label>
-                        <input 
-                            type="password"
-                            id="apiKeyInput"
-                            placeholder="Ingrese su clave"
-                        >
-                    </div>
-
-                    <div class="form-col form-col-button">
-                        <button class="btn-primary" onclick="enviarArticulo()">
-                            Registrar Artículo
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- PANEL LISTA DE ARTICULOS -->
-            <div class="card table-card">
-                <h2 class="card-title">Lista de Productos</h2>
-
-                <div class="table-container">
-                    <table id="productosTable">
-                        <thead>
-                            <tr>
-                                <th>Artículo</th>
-                                <th>Precio</th>
-                                <th>Genera IVA</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="3" style="text-align:center; opacity:0.6;">
-                                    No hay productos registrados
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-    `;
-
-    cargarArticulos();
+    cargarArticulosCombo().then(() => initAgregarArticulo());
 }
 
-
-
-    }
 
 /* ============================================================
     FUNCIONES AUXILIARES
@@ -2526,7 +2439,71 @@ async function cargarArticulosCombo() {
         select.innerHTML = `<option value="">❌ Error cargando artículos</option>`;
     }
 }
+// --- Cargar artículos desde GitHub ---
+async function cargarArticulosCombo() {
+    const select = document.getElementById("articuloSelect");
+    try {
+        const res = await fetch("https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/productoMayoreo/productoMayoreo.json");
+        const data = await res.json();
+        window.articulosJSON = data; // Guardar globalmente
 
+        select.innerHTML = `<option value="">Seleccione un artículo</option>` +
+            data.map(a => `<option value="${a.Nombre}">${a.Nombre}</option>`).join("");
+    } catch (err) {
+        console.error(err);
+        select.innerHTML = `<option value="">❌ Error cargando artículos</option>`;
+    }
+}
+
+// --- Inicializar botón agregar ---
+function initAgregarArticulo() {
+    const articuloSelect = document.getElementById("articuloSelect");
+    const cantidadInput = document.getElementById("cantidadInput");
+    const btnAgregar = document.querySelector(".btn-primary");
+
+    function validarCampos() {
+        const articulo = articuloSelect.value;
+        const cantidad = parseInt(cantidadInput.value);
+        btnAgregar.disabled = !articulo || !cantidad || cantidad <= 0;
+    }
+
+    articuloSelect.addEventListener("change", validarCampos);
+    cantidadInput.addEventListener("input", validarCampos);
+
+    btnAgregar.addEventListener("click", () => {
+        agregarArticuloDetalle(articuloSelect.value, parseInt(cantidadInput.value));
+        articuloSelect.value = "";
+        cantidadInput.value = "";
+        btnAgregar.disabled = true;
+    });
+}
+
+// --- Agregar fila a la tabla de detalle ---
+function agregarArticuloDetalle(nombre, cantidad) {
+    const tbody = document.querySelector("#detalleVentaTable tbody");
+
+    const articuloData = window.articulosJSON.find(a => a.Nombre === nombre);
+    if (!articuloData) return;
+
+    const importe = cantidad * parseFloat(articuloData.Precio);
+    const iva = articuloData.GravaIVA === "SI" ? importe * 0.16 : 0;
+    const total = importe + iva;
+
+    // Limpiar fila de "No hay artículos" si existe
+    if (tbody.children.length === 1 && tbody.children[0].children[0].colSpan === 5) {
+        tbody.innerHTML = "";
+    }
+
+    const fila = document.createElement("tr");
+    fila.innerHTML = `
+        <td>${nombre}</td>
+        <td>${cantidad}</td>
+        <td>${importe.toFixed(2)}</td>
+        <td>${iva.toFixed(2)}</td>
+        <td>${total.toFixed(2)}</td>
+    `;
+    tbody.appendChild(fila);
+}
 
     
 
