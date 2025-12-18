@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -506,7 +506,7 @@ th, td {
     <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>   
     <div class="btn-menu" onclick="loadSection('Inventario'); toggleMenu();">Inventario</div>    
     <div class="btn-menu" onclick="loadSection('Gastos'); toggleMenu();">Gastos</div>
-   
+    <div class="btn-menu" onclick="loadSection('Registrarventa'); toggleMenu();">Registrar Venta</div>
   
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -813,7 +813,85 @@ else if (section === "Gastos") {
 
         </div>
     `;
- }
+ }else if (section === "Registrarventa") {
+    view.innerHTML = `
+        <div class="gastos-portal gastos-premium">
+
+            <h1 class="title">💼 Registrar Ventas</h1>
+
+            <!-- PANEL FORMULARIO -->
+            <div class="card form-card">
+                <h2 class="card-title">Nueva Venta</h2>
+
+                <!-- CLIENTE -->
+                <label for="clienteSelect">Cliente</label>
+                <select id="clienteSelect">
+                    <option value="">⏳ Cargando clientes...</option>
+                </select>
+
+                <!-- ARTICULO -->
+                <label for="articuloSelect">Artículo</label>
+                <select id="articuloSelect">
+                    <option value="">Seleccione un artículo</option>
+                </select>
+
+                <!-- TIPO DE PAGO -->
+                <label for="tipoPagoSelect">Tipo de pago</label>
+                <select id="tipoPagoSelect">
+                    <option value="">Seleccione tipo de pago</option>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Tarjeta">Tarjeta</option>
+                </select>
+
+                <!-- CANTIDAD -->
+                <label for="cantidadInput">Cantidad</label>
+                <input 
+                    type="number" 
+                    id="cantidadInput" 
+                    min="1" 
+                    step="1" 
+                    placeholder="Ej. 1, 2, 3..."
+                >
+
+                <button class="btn-primary" disabled>
+                    Agregar Artículo
+                </button>
+            </div>
+
+            <!-- PANEL DETALLE / DATAGRID -->
+            <div class="card table-card">
+                <h2 class="card-title">Detalle de la Venta</h2>
+
+                <div class="table-container">
+                    <table id="detalleVentaTable">
+                        <thead>
+                            <tr>
+                                <th>Artículo</th>
+                                <th>Cantidad</th>
+                                <th>Importe</th>
+                                <th>IVA</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" style="text-align:center; opacity:0.6;">
+                                    No hay artículos agregados
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    `;
+
+    // Cargar clientes y artículos
+    cargarClientesCombo();
+    cargarArticulosCombo().then(() => initAgregarArticulo());
+}
 
 }
 
