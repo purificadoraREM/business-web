@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -490,7 +490,8 @@ th, td {
     <div class="btn-menu" onclick="loadSection('Cortes'); toggleMenu();">Cortes</div>
     <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>   
     <div class="btn-menu" onclick="loadSection('Inventario'); toggleMenu();">Inventario</div>    
-      <div class="btn-menu" onclick="loadSection('Gastos'); toggleMenu();">Gastos</div>  
+    <div class="btn-menu" onclick="loadSection('Gastos'); toggleMenu();">Gastos</div>
+     <div class="btn-menu" onclick="loadSection('Registrarventa'); toggleMenu();">Registrar Venta</div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
 
@@ -797,16 +798,20 @@ else if (section === "Gastos") {
         </div>
     `;
 }
+else if (section === "Gastos") {
+    view.innerHTML = `
+        <div class="gastos-portal gastos-premium">
 
+            <h1 class="title">💼 Registrar Ventas</h1>
 
-
-
-
+            <div class="card form-card">
+                <h2 class="card-title">Nueva Venta</h2>
+        </div>
+    `;
+}
 
     }
 
-
-    
 /* ============================================================
     FUNCIONES AUXILIARES
 ============================================================ */
