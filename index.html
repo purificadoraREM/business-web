@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -491,7 +491,8 @@ th, td {
     <div class="btn-menu" onclick="loadSection('Clientes'); toggleMenu();">Clientes</div>   
     <div class="btn-menu" onclick="loadSection('Inventario'); toggleMenu();">Inventario</div>    
     <div class="btn-menu" onclick="loadSection('Gastos'); toggleMenu();">Gastos</div>
-     <div class="btn-menu" onclick="loadSection('Registrarventa'); toggleMenu();">Registrar Venta</div>
+    <div class="btn-menu" onclick="loadSection('Registrarventa'); toggleMenu();">Registrar Venta</div>
+     <div class="btn-menu" onclick="loadSection('Registrarproducto'); toggleMenu();">Registrar Producto</div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
 
@@ -875,7 +876,76 @@ else if (section === "Registrarventa") {
     `;
 
     cargarClientesCombo();
+    
+}else if (section === "RegistrarArticulo") {
+    view.innerHTML = `
+        <div class="gastos-portal gastos-premium">
+
+            <h1 class="title">📦 Registrar Artículos</h1>
+
+            <!-- PANEL FORMULARIO -->
+            <div class="card form-card">
+                <h2 class="card-title">Nuevo Artículo</h2>
+
+                <!-- ARTICULO -->
+                <label for="articuloInput">Artículo</label>
+                <input 
+                    type="text" 
+                    id="articuloInput" 
+                    placeholder="Nombre del artículo"
+                >
+
+                <!-- PRECIO -->
+                <label for="precioInput">Precio</label>
+                <input 
+                    type="number" 
+                    id="precioInput"
+                    min="0"
+                    step="0.01"
+                    placeholder="Ej. 25.00"
+                >
+
+                <!-- GENERA IVA -->
+                <label for="generaIvaSelect">¿Genera IVA?</label>
+                <select id="generaIvaSelect">
+                    <option value="">Seleccione opción</option>
+                    <option value="SI">Sí</option>
+                    <option value="NO">No</option>
+                </select>
+
+                <button class="btn-primary">
+                    Registrar Artículo
+                </button>
+            </div>
+
+            <!-- PANEL LISTA DE ARTICULOS -->
+            <div class="card table-card">
+                <h2 class="card-title">Lista de Productos</h2>
+
+                <div class="table-container">
+                    <table id="productosTable">
+                        <thead>
+                            <tr>
+                                <th>Artículo</th>
+                                <th>Precio</th>
+                                <th>Genera IVA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="3" style="text-align:center; opacity:0.6;">
+                                    No hay productos registrados
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    `;
 }
+
 
     }
 
