@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -140,7 +140,22 @@ flex: 1; margin: 0 4px; }
 /* =========================================================
    ESTILOS GASTOS PREMIUM — TOTALMENTE AISLADOS
 ========================================================= */
+.form-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-top: 15px;
+}
 
+.form-col {
+    flex: 1;
+}
+
+.form-col-button {
+    flex: 0;
+}
+
+    
 .gastos-premium .title {
     font-size: 32px;
     font-weight: 800;
@@ -913,9 +928,24 @@ else if (section === "Registrarventa") {
                     <option value="NO">No</option>
                 </select>
 
-                <button class="btn-primary">
-                    Registrar Artículo
-                </button>
+                <!-- CLAVE + BOTON -->
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="apiKeyInput">Clave de seguridad</label>
+                        <input 
+                            type="password"
+                            id="apiKeyInput"
+                            placeholder="Ingrese su clave"
+                        >
+                    </div>
+
+                    <div class="form-col form-col-button">
+                        <button class="btn-primary" onclick="enviarArticulo()">
+                            Registrar Artículo
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
             <!-- PANEL LISTA DE ARTICULOS -->
@@ -945,6 +975,7 @@ else if (section === "Registrarventa") {
         </div>
     `;
 }
+
 
 
     }
@@ -2414,6 +2445,75 @@ async function cargarClientesCombo() {
             <option value="${c}">${c}</option>
         `).join("")}
     `;
+}
+
+    /* ============================================================
+   ENVIAR ARTICULO
+============================================================ */
+async function enviarArticulo() {
+
+    const articulo = document.getElementById("articuloInput").value.trim();
+    const precio = document.getElementById("precioInput").value;
+    const generaIva = document.getElementById("generaIvaSelect").value;
+    const apiKey = document.getElementById("apiKeyInput").value; // misma clave
+   
+
+    // Validación básica
+    if (!articulo || !precio || !generaIva) {
+        alert("Por favor, completa todos los campos.");
+        return;
+    }
+
+    if (!apiKey) {
+        alert("Por favor, ingresa tu clave de seguridad.");
+        return;
+    }
+
+    const articuloData = {
+        articulo,
+        precio: parseFloat(precio),
+        generaIva,        // "SI" o "NO"
+        usuario,
+        fechaRegistro: new Date().toISOString().split("T")[0]
+    };
+
+    try {
+        const response = await fetch("https://rem.d5hx88s66m.workers.dev", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-api-key": apiKey
+            },
+            body: JSON.stringify({
+                tabla: "MisArticulos",
+                data: articuloData
+            })
+        });
+
+        const result = await response.json();
+
+        console.log("RESPUESTA DEL WORKER:", result);
+        alert(JSON.stringify(result, null, 2));
+
+        if (response.ok) {
+
+            // Limpiar formulario
+            document.getElementById("articuloInput").value = "";
+            document.getElementById("precioInput").value = "";
+            document.getElementById("generaIvaSelect").value = "";
+            document.getElementById("apiKeyInput").value = "";
+
+            // Luego aquí puedes recargar la tabla
+            // cargarArticulos();
+
+        } else {
+            alert("Error al registrar artículo: " + (result.error || result));
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo conectar con el servidor.");
+    }
 }
 
 
