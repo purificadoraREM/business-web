@@ -891,7 +891,7 @@ else if (section === "Registrarventa") {
     `;
 
     cargarClientesCombo();
-    
+    cargarArticulosCombo();
 }else if (section === "Registrarproducto") {
     view.innerHTML = `
         <div class="gastos-portal gastos-premium">
@@ -2488,6 +2488,42 @@ async function cargarArticulos() {
                 No se pudo cargar la lista
             </td>
         </tr>`;
+    }
+}
+/* ============================================================ 
+   CARGAR ARTÍCULOS EN COMBOBOX - registrar venta
+============================================================ */
+async function cargarArticulosCombo() {
+    const select = document.getElementById("articuloSelect");
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/productoMayoreo/productoMayoreo.json`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Error al cargar los artículos: ${res.status}`);
+
+        const data = await res.json();
+
+        if (!data || data.length === 0) {
+            select.innerHTML = `<option value="">⚠️ No hay artículos</option>`;
+            return;
+        }
+
+        // Ordenar alfabéticamente por Nombre
+        const articulosOrdenados = data.sort((a, b) => a.Nombre.localeCompare(b.Nombre));
+
+        // Construir options
+        select.innerHTML = `
+            <option value="">Seleccione un artículo</option>
+            ${articulosOrdenados.map(a => `
+                <option value="${a.Nombre}" data-precio="${a.Precio}" data-iva="${a.GravaIva}">
+                    ${a.Nombre}
+                </option>
+            `).join("")}
+        `;
+
+    } catch (error) {
+        console.error(error);
+        select.innerHTML = `<option value="">❌ Error cargando artículos</option>`;
     }
 }
 
