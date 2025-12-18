@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2455,8 +2455,7 @@ async function enviarArticulo() {
     const articulo = document.getElementById("articuloInput").value.trim();
     const precio = document.getElementById("precioInput").value;
     const generaIva = document.getElementById("generaIvaSelect").value;
-    const apiKey = document.getElementById("apiKeyInput").value; // misma clave
-   
+    const apiKey = document.getElementById("apiKeyInput").value;
 
     // Validación básica
     if (!articulo || !precio || !generaIva) {
@@ -2470,10 +2469,9 @@ async function enviarArticulo() {
     }
 
     const articuloData = {
-        articulo,
-        precio: parseFloat(precio),
-        generaIva        // "SI" o "NO"
-        
+        Articulo: articulo,
+        Precio: parseFloat(precio),
+        Iva: generaIva  // "SI" o "NO"
     };
 
     try {
@@ -2484,7 +2482,7 @@ async function enviarArticulo() {
                 "x-api-key": apiKey
             },
             body: JSON.stringify({
-                tabla: "MisArticulos",
+                Tabla: "MisArticulos", // ⬅ mayúscula
                 data: articuloData
             })
         });
@@ -2495,16 +2493,10 @@ async function enviarArticulo() {
         alert(JSON.stringify(result, null, 2));
 
         if (response.ok) {
-
-            // Limpiar formulario
             document.getElementById("articuloInput").value = "";
             document.getElementById("precioInput").value = "";
             document.getElementById("generaIvaSelect").value = "";
             document.getElementById("apiKeyInput").value = "";
-
-            // Luego aquí puedes recargar la tabla
-            // cargarArticulos();
-
         } else {
             alert("Error al registrar artículo: " + (result.error || result));
         }
@@ -2514,6 +2506,7 @@ async function enviarArticulo() {
         alert("No se pudo conectar con el servidor.");
     }
 }
+
 
 
 
