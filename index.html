@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -801,16 +801,21 @@ else if (section === "Gastos") {
 else if (section === "Registrarventa") {
     view.innerHTML = `
         <div class="gastos-portal gastos-premium">
-
             <h1 class="title">💼 Registrar Ventas</h1>
 
             <div class="card form-card">
                 <h2 class="card-title">Nueva Venta</h2>
-        </div>
+
+                <label for="clienteSelect">Cliente</label>
+                <select id="clienteSelect">
+                    <option value="">⏳ Cargando clientes...</option>
+                </select>
+            </div>
         </div>
     `;
-}
 
+    cargarClientesCombo(); // 👈 cargar clientes
+}
     }
 
 /* ============================================================
@@ -2213,6 +2218,71 @@ async function borrarRegistro(id) {
         console.error(err);
         alert("No se pudo conectar con el servidor al borrar el registro.");
     }
+}
+
+    /* ============================================================ 
+   CARGAR CLIENTES EN COMBOBOX  registrar venta
+============================================================ */
+async function cargarClientesCombo() {
+
+    const select = document.getElementById("clienteSelect");
+
+    const hoy = new Date();
+    const yearActual = hoy.getFullYear();
+    const yearAnterior = yearActual - 1;
+
+    let datos = [];
+    let archivosCargados = 0;
+
+    for (let y of [yearAnterior, yearActual]) {
+        for (let m = 1; m <= 12; m++) {
+            const mes = String(m).padStart(2, '0');
+            const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/VentaDetalle/VentaDetalle_${y}_${mes}.json`;
+
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    const dataMes = await res.json();
+                    datos.push(...dataMes);
+                    archivosCargados++;
+                }
+            } catch (error) {
+                console.error("Error cargando:", url);
+            }
+        }
+    }
+
+    if (archivosCargados === 0) {
+        select.innerHTML = `<option value="">❌ Error cargando clientes</option>`;
+        return;
+    }
+
+    let clientes = new Set();
+
+    datos.forEach(v => {
+        const cliente = v.Cliente?.trim();
+        if (!cliente) return;
+        if (["N/A", "Ningún Cliente Seleccionado", "-", ""].includes(cliente)) return;
+        clientes.add(cliente);
+    });
+
+    if (clientes.size === 0) {
+        select.innerHTML = `<option value="">⚠️ Sin clientes</option>`;
+        return;
+    }
+
+    // Ordenar alfabéticamente
+    const clientesOrdenados = [...clientes].sort((a, b) =>
+        a.localeCompare(b, 'es')
+    );
+
+    // Construir options
+    select.innerHTML = `
+        <option value="">Seleccione un cliente</option>
+        ${clientesOrdenados.map(c => `
+            <option value="${c}">${c}</option>
+        `).join("")}
+    `;
 }
 
 
