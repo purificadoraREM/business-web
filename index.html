@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2472,12 +2472,12 @@ async function cargarArticulos() {
             return;
         }
 
-        // Crear filas dinámicas
+        // Crear filas dinámicas usando los nombres correctos del JSON
         tbody.innerHTML = data.map(item => `
             <tr>
-                <td>${item.Articulo}</td>
+                <td>${item.Nombre}</td>
                 <td>${item.Precio}</td>
-                <td>${item.Iva}</td>
+                <td>${item.GravaIVA}</td>
             </tr>
         `).join("");
 
@@ -2490,6 +2490,7 @@ async function cargarArticulos() {
         </tr>`;
     }
 }
+
 
     
 
