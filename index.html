@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -804,6 +804,7 @@ else if (section === "Registrarventa") {
 
             <h1 class="title">💼 Registrar Ventas</h1>
 
+            <!-- PANEL FORMULARIO -->
             <div class="card form-card">
                 <h2 class="card-title">Nueva Venta</h2>
 
@@ -826,7 +827,7 @@ else if (section === "Registrarventa") {
                     <option value="Efectivo">Efectivo</option>
                     <option value="Transferencia">Transferencia</option>
                     <option value="Tarjeta">Tarjeta</option>
-                    <option value="Crédito">Crédito</option>
+                    
                 </select>
 
                 <!-- CANTIDAD -->
@@ -839,16 +840,41 @@ else if (section === "Registrarventa") {
                     placeholder="Ej. 1, 2, 3..."
                 >
 
-                <!-- BOTON (opcional por ahora) -->
                 <button class="btn-primary" disabled>
-                    Guardar Venta
+                    Agregar Artículo
                 </button>
-
             </div>
+
+            <!-- PANEL DETALLE / DATAGRID -->
+            <div class="card table-card">
+                <h2 class="card-title">Detalle de la Venta</h2>
+
+                <div class="table-container">
+                    <table id="detalleVentaTable">
+                        <thead>
+                            <tr>
+                                <th>Artículo</th>
+                                <th>Cantidad</th>
+                                <th>Importe</th>
+                                <th>IVA</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" style="text-align:center; opacity:0.6;">
+                                    No hay artículos agregados
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     `;
 
-    cargarClientesCombo(); // 👈 ya existente
+    cargarClientesCombo();
 }
 
     }
