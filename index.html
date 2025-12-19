@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM3</title>
+<title>Purificadora REM4</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2484,19 +2484,35 @@ function initAgregarArticulo() {
     });
 }
 
-// --- Agregar fila a la tabla de detalle ---
 function agregarArticuloDetalle(nombre, cantidad) {
     const tbody = document.querySelector("#detalleVentaTable tbody");
 
     const articuloData = window.articulosJSON.find(a => a.Nombre === nombre);
     if (!articuloData) return;
 
-    const importe = cantidad * parseFloat(articuloData.Precio);
-    const iva = articuloData.GravaIVA === "SI" ? importe * 0.16 : 0;
-    const total = importe + iva;
+    const precioUnitario = parseFloat(articuloData.Precio);
+    let importe = 0;
+    let iva = 0;
+    let total = 0;
+
+    if (articuloData.GravaIVA === true) {
+        // Precio INCLUYE IVA
+        const precioSinIVA = precioUnitario / 1.16;
+        importe = precioSinIVA * cantidad;
+        iva = (precioUnitario - precioSinIVA) * cantidad;
+        total = precioUnitario * cantidad;
+    } else {
+        // Precio NO grava IVA
+        importe = precioUnitario * cantidad;
+        iva = 0;
+        total = importe;
+    }
 
     // Limpiar fila vacía
-    if (tbody.children.length === 1 && tbody.children[0].children[0].colSpan === 5) {
+    if (
+        tbody.children.length === 1 &&
+        tbody.children[0].children[0].colSpan === 5
+    ) {
         tbody.innerHTML = "";
     }
 
@@ -2513,6 +2529,7 @@ function agregarArticuloDetalle(nombre, cantidad) {
     recalcularTotalVenta();
 }
 
+
     function recalcularTotalVenta() {
     let total = 0;
 
@@ -2523,7 +2540,7 @@ function agregarArticuloDetalle(nombre, cantidad) {
     document.getElementById("totalVenta").textContent = `$${total.toFixed(2)}`;
     document.getElementById("btnRegistrarVenta").disabled = total === 0;
 }
-    // =============================
+// =============================
 // EVENTOS GLOBALES
 // =============================
 document.addEventListener("click", e => {
@@ -2545,10 +2562,6 @@ document.addEventListener("click", e => {
         document.getElementById("btnRegistrarVenta").disabled = true;
     }
 });
-
-
-
-    
 
 </script>    
 </body>
