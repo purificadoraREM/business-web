@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM2</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2522,6 +2522,29 @@ function agregarArticuloDetalle(nombre, cantidad) {
     document.getElementById("totalVenta").textContent = `$${total.toFixed(2)}`;
     document.getElementById("btnRegistrarVenta").disabled = total === 0;
 }
+    // =============================
+// EVENTOS GLOBALES
+// =============================
+document.addEventListener("click", e => {
+    if (e.target.id === "btnRegistrarVenta") {
+        alert("✅ Venta registrada");
+
+        const tbody = document.querySelector("#detalleVentaTable tbody");
+        if (!tbody) return;
+
+        tbody.innerHTML = `
+            <tr id="filaVacia">
+                <td colspan="5" style="text-align:center; opacity:0.6;">
+                    No hay artículos agregados
+                </td>
+            </tr>
+        `;
+
+        document.getElementById("totalVenta").textContent = "$0.00";
+        document.getElementById("btnRegistrarVenta").disabled = true;
+    }
+});
+
 
 
     
