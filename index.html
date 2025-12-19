@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2551,7 +2551,7 @@ document.addEventListener("click", async e => {
 
     const cliente = document.getElementById("clienteSelect").value;
     const tipoPago = document.getElementById("tipoPagoSelect").value;
-    const apiKey = document.getElementById("apiKeyInput").value; // <-- API Key
+    const apiKey = document.getElementById("apiKeyInput").value;
 
     if (!cliente || !tipoPago) {
         alert("Seleccione cliente y tipo de pago");
@@ -2569,12 +2569,14 @@ document.addEventListener("click", async e => {
         return;
     }
 
+    // ===== DATOS GENERALES =====
     const folio = `V-${Date.now()}`;
     const fecha = new Date().toISOString().split("T")[0];
     const hora = new Date().toTimeString().slice(0, 8);
 
     const ventaDetalle = [];
 
+    // ===== ARMAR DETALLE =====
     filas.forEach(tr => {
         const tds = tr.querySelectorAll("td");
         if (tds.length !== 5) return;
@@ -2603,29 +2605,69 @@ document.addEventListener("click", async e => {
         });
     });
 
+    // ===== TOTALES GENERALES =====
+    let subtotalGral = 0;
+    let ivaGral = 0;
+    let totalGral = 0;
+
+    ventaDetalle.forEach(v => {
+        subtotalGral += v.Subtotal;
+        ivaGral += v.Iva;
+        totalGral += v.Total;
+    });
+
+    // ===== FORMA DE PAGO =====
+    let efectivo = 0;
+    let tarjeta = 0;
+    let transferencia = 0;
+
+    if (tipoPago === "Efectivo") efectivo = totalGral;
+    if (tipoPago === "Tarjeta") tarjeta = totalGral;
+    if (tipoPago === "Transferencia") transferencia = totalGral;
+
+    // ===== VENTA GENERAL =====
+    const ventaGral = {
+        Folio: folio,
+        Fecha: fecha,
+        Hora: hora,
+        Cliente: cliente,
+        TipoDeCompra: "Mayoreo",
+        TipoDePago: tipoPago,
+        Subtotal: subtotalGral,
+        Iva: ivaGral,
+        Total: totalGral,
+        Efectivo: efectivo,
+        Tarjeta: tarjeta,
+        Transferencia: transferencia,
+        Usuario: "Admin"
+    };
+
+    // ===== ENVIAR AL WORKER =====
     try {
         const res = await fetch("https://rem.d5hx88s66m.workers.dev", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": apiKey // <-- usar la API Key ingresada
+                "x-api-key": apiKey
             },
             body: JSON.stringify({
-                Tabla: "VentaDetalle",
-                data: ventaDetalle
+                Tabla: "VentaCompleta",
+                detalle: ventaDetalle,
+                venta: ventaGral
             })
         });
 
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Error");
 
-        alert(`✅ Venta registrada (${ventaDetalle.length} productos)`);
+        alert(`✅ Venta registrada\nFolio: ${folio}\nProductos: ${ventaDetalle.length}`);
 
     } catch (err) {
         console.error(err);
         alert("❌ Error al registrar venta");
     }
 });
+
 
 </script>    
 </body>
