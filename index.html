@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM</title>
+<title>Purificadora REM1</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -847,6 +847,9 @@ else if (section === "Gastos") {
                     <option value="Transferencia">Transferencia</option>
                     <option value="Tarjeta">Tarjeta</option>
                 </select>
+
+                    <label>API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="Ingrese su API Key">
 
                 <label>Cantidad</label>
                 <input type="number" id="cantidadInput" min="1" value="1">
@@ -2543,16 +2546,20 @@ function agregarArticuloDetalle(nombre, cantidad) {
 // =============================
 // EVENTOS GLOBALES
 // =============================
-
-
-    document.addEventListener("click", async e => {
+document.addEventListener("click", async e => {
     if (e.target.id !== "btnRegistrarVenta") return;
 
     const cliente = document.getElementById("clienteSelect").value;
     const tipoPago = document.getElementById("tipoPagoSelect").value;
+    const apiKey = document.getElementById("apiKeyInput").value; // <-- API Key
 
     if (!cliente || !tipoPago) {
         alert("Seleccione cliente y tipo de pago");
+        return;
+    }
+
+    if (!apiKey) {
+        alert("Ingrese su API Key");
         return;
     }
 
@@ -2566,26 +2573,26 @@ function agregarArticuloDetalle(nombre, cantidad) {
     const fecha = new Date().toISOString().split("T")[0];
     const hora = new Date().toTimeString().slice(0, 8);
 
-    const detalles = [];
+    const ventaDetalle = [];
 
     filas.forEach(tr => {
         const tds = tr.querySelectorAll("td");
         if (tds.length !== 5) return;
 
-        const nombre = tds[0].textContent;
+        const articulo = tds[0].textContent;
         const cantidad = parseInt(tds[1].textContent);
         const subtotal = parseFloat(tds[2].textContent);
         const iva = parseFloat(tds[3].textContent);
         const total = parseFloat(tds[4].textContent);
 
-        const articuloData = window.articulosJSON.find(a => a.Nombre === nombre);
+        const articuloData = window.articulosJSON.find(a => a.Nombre === articulo);
 
-        detalles.push({
+        ventaDetalle.push({
             Folio: folio,
             Fecha: fecha,
             Hora: hora,
             Cliente: cliente,
-            Articulo: nombre,
+            Articulo: articulo,
             TipoDeCompra: "Mayoreo",
             TipoDePago: tipoPago,
             Cantidad: cantidad,
@@ -2601,24 +2608,27 @@ function agregarArticuloDetalle(nombre, cantidad) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": "TU_API_KEY"
+                "x-api-key": apiKey // <-- usar la API Key ingresada
             },
             body: JSON.stringify({
                 Tabla: "VentaDetalle",
-                data: detalles
+                data: ventaDetalle
             })
         });
 
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Error");
 
-        alert("✅ Venta registrada correctamente");
+        alert(`✅ Venta registrada (${ventaDetalle.length} productos)`);
 
     } catch (err) {
         console.error(err);
         alert("❌ Error al registrar venta");
     }
 });
+
+
+   
 
 
 </script>    
