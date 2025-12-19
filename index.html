@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM1</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2598,10 +2598,10 @@ document.addEventListener("click", async e => {
             TipoDeCompra: "Mayoreo",
             TipoDePago: tipoPago,
             Cantidad: cantidad,
-            PrecioUnitario: articuloData.Precio,
-            Subtotal: subtotal,
-            Iva: iva,
-            Total: total
+            PrecioUnitario: parseFloat(articuloData.Precio.toFixed(2)),
+            Subtotal: parseFloat(subtotal.toFixed(2)),
+            Iva: parseFloat(iva.toFixed(2)),
+            Total: parseFloat(total.toFixed(2))
         });
     });
 
@@ -2616,6 +2616,10 @@ document.addEventListener("click", async e => {
         totalGral += v.Total;
     });
 
+    subtotalGral = parseFloat(subtotalGral.toFixed(2));
+    ivaGral = parseFloat(ivaGral.toFixed(2));
+    totalGral = parseFloat(totalGral.toFixed(2));
+
     // ===== FORMA DE PAGO =====
     let efectivo = 0;
     let tarjeta = 0;
@@ -2627,6 +2631,7 @@ document.addEventListener("click", async e => {
 
     // ===== VENTA GENERAL =====
     const ventaGral = {
+        id: folio, // usar folio como ID único
         Folio: folio,
         Fecha: fecha,
         Hora: hora,
@@ -2639,7 +2644,10 @@ document.addEventListener("click", async e => {
         Efectivo: efectivo,
         Tarjeta: tarjeta,
         Transferencia: transferencia,
-        Usuario: "Admin"
+        Usuario: "Admin",
+        estado: "pendiente",
+        procesado_en: "",
+        creado: fecha
     };
 
     // ===== ENVIAR AL WORKER =====
