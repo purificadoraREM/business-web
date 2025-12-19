@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Purificadora REM4</title>
+<title>Purificadora REM</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <style>
@@ -2543,25 +2543,83 @@ function agregarArticuloDetalle(nombre, cantidad) {
 // =============================
 // EVENTOS GLOBALES
 // =============================
-document.addEventListener("click", e => {
-    if (e.target.id === "btnRegistrarVenta") {
-        alert("✅ Venta registrada");
 
-        const tbody = document.querySelector("#detalleVentaTable tbody");
-        if (!tbody) return;
 
-        tbody.innerHTML = `
-            <tr id="filaVacia">
-                <td colspan="5" style="text-align:center; opacity:0.6;">
-                    No hay artículos agregados
-                </td>
-            </tr>
-        `;
+    document.addEventListener("click", async e => {
+    if (e.target.id !== "btnRegistrarVenta") return;
 
-        document.getElementById("totalVenta").textContent = "$0.00";
-        document.getElementById("btnRegistrarVenta").disabled = true;
+    const cliente = document.getElementById("clienteSelect").value;
+    const tipoPago = document.getElementById("tipoPagoSelect").value;
+
+    if (!cliente || !tipoPago) {
+        alert("Seleccione cliente y tipo de pago");
+        return;
+    }
+
+    const filas = document.querySelectorAll("#detalleVentaTable tbody tr");
+    if (filas.length === 0 || filas[0].id === "filaVacia") {
+        alert("No hay artículos en la venta");
+        return;
+    }
+
+    const folio = `V-${Date.now()}`;
+    const fecha = new Date().toISOString().split("T")[0];
+    const hora = new Date().toTimeString().slice(0, 8);
+
+    const detalles = [];
+
+    filas.forEach(tr => {
+        const tds = tr.querySelectorAll("td");
+        if (tds.length !== 5) return;
+
+        const nombre = tds[0].textContent;
+        const cantidad = parseInt(tds[1].textContent);
+        const subtotal = parseFloat(tds[2].textContent);
+        const iva = parseFloat(tds[3].textContent);
+        const total = parseFloat(tds[4].textContent);
+
+        const articuloData = window.articulosJSON.find(a => a.Nombre === nombre);
+
+        detalles.push({
+            Folio: folio,
+            Fecha: fecha,
+            Hora: hora,
+            Cliente: cliente,
+            Articulo: nombre,
+            TipoDeCompra: "Mayoreo",
+            TipoDePago: tipoPago,
+            Cantidad: cantidad,
+            PrecioUnitario: articuloData.Precio,
+            Subtotal: subtotal,
+            Iva: iva,
+            Total: total
+        });
+    });
+
+    try {
+        const res = await fetch("TU_URL_DEL_WORKER", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-api-key": "TU_API_KEY"
+            },
+            body: JSON.stringify({
+                Tabla: "VentaDetalle",
+                data: detalles
+            })
+        });
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Error");
+
+        alert("✅ Venta registrada correctamente");
+
+    } catch (err) {
+        console.error(err);
+        alert("❌ Error al registrar venta");
     }
 });
+
 
 </script>    
 </body>
