@@ -2213,7 +2213,7 @@ async function guardarModificacion() {
 
     const payload = {
         Tabla: "RegEmpleados",
-        ID: Number(id),
+        id: Number(id),
         Nombre: registro.empleado,
         Fecha: formatDate(registro.fecha), // Formateamos la fecha original también
         HoraEntrada: fechaEntrada,         // Usamos la nueva hora si se modificó
