@@ -365,6 +365,28 @@ flex: 1; margin: 0 4px; }
     max-width: 100%;
 }
 
+/* FIX DEFINITIVO input date en móvil */
+@media (max-width: 768px) {
+
+    .gastos-premium input[type="date"] {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+
+        /* quitar empuje extra */
+        padding-left: 38px;
+
+        /* evita que el icono rompa el layout */
+        overflow: hidden;
+    }
+}
+@media (max-width: 768px) {
+    .gastos-premium .input-icon {
+        width: 100%;
+        overflow: hidden;
+    }
+}
 
     
 
