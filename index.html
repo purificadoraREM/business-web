@@ -1293,12 +1293,12 @@ function exportarAsistencias() {
     }
 
     const data = window.registrosFiltradosExport.map(r => {
-        const calc = calcularHoras(r.HoraEntrada, r.HoraSalida);
+        const calc = calcularHoras(r.entrada, r.salida);
         return {
-            "Empleado": r.Nombre,
-            "Fecha": r.Fecha,
-            "Entrada": r.HoraEntrada,
-            "Salida": r.HoraSalida ?? "NULL",
+            "Empleado": r.empleado,
+            "Fecha": r.fecha,
+            "Entrada": r.entrada,
+            "Salida": r.salida ?? "NULL",
             "Horas trabajadas": calc.horas === null ? "—" : `${calc.horas}:${String(calc.minutos).padStart(2,'0')}`
         };
     });
