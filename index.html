@@ -2690,10 +2690,20 @@ document.addEventListener("click", async e => {
         return;
     }
 
-    // ===== DATOS GENERALES =====
+    // ===== DATOS GENERALES (HORA LOCAL DEL DISPOSITIVO) =====
     const folio = `V-${Date.now()}`;
-    const fecha = new Date().toISOString().split("T")[0];
-    const hora = new Date().toTimeString().slice(0, 8);
+
+    const now = new Date();
+
+    const fecha =
+        now.getFullYear() + "-" +
+        String(now.getMonth() + 1).padStart(2, "0") + "-" +
+        String(now.getDate()).padStart(2, "0");
+
+    const hora =
+        String(now.getHours()).padStart(2, "0") + ":" +
+        String(now.getMinutes()).padStart(2, "0") + ":" +
+        String(now.getSeconds()).padStart(2, "0");
 
     const ventaDetalle = [];
 
@@ -2752,7 +2762,7 @@ document.addEventListener("click", async e => {
 
     // ===== VENTA GENERAL =====
     const ventaGral = {
-        id: folio, // usar folio como ID único
+        id: folio,
         Folio: folio,
         Fecha: fecha,
         Hora: hora,
@@ -2796,6 +2806,7 @@ document.addEventListener("click", async e => {
         alert("❌ Error al registrar venta");
     }
 });
+
 
 
 </script>    
