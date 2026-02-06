@@ -1039,9 +1039,20 @@ else if (section === "Gastos") {
     cargarArticulosCombo();
     initAgregarArticulo();
 
-    // ✅ Fecha automática (pero editable)
-    const fechaInput = document.getElementById("fechaVenta");
-    fechaInput.value = new Date().toISOString().split("T")[0];
+   // ✅ Fecha automática (hora local, pero editable)
+const fechaInput = document.getElementById("fechaVenta");
+
+const hoy = new Date();
+const fechaLocal =
+    hoy.getFullYear() + "-" +
+    String(hoy.getMonth() + 1).padStart(2, "0") + "-" +
+    String(hoy.getDate()).padStart(2, "0");
+
+fechaInput.value = fechaLocal;
+
+// (opcional) bloquear fechas futuras
+fechaInput.max = fechaLocal;
+
 }
 
 
