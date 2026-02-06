@@ -388,7 +388,17 @@ flex: 1; margin: 0 4px; }
     }
 }
 
-    
+    .detalle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.detalle-header .campo {
+    min-width: 200px;
+}
+
 
     
 /* Contenedor botones + tarjeta */
@@ -981,7 +991,15 @@ else if (section === "Gastos") {
 
             <!-- PANEL DETALLE -->
             <div class="card table-card">
-                <h2 class="card-title">Detalle de la Venta</h2>
+
+                <div class="detalle-header">
+                    <div class="campo datetime">
+                        <label>Fecha</label>
+                        <input type="date" id="fechaVenta">
+                    </div>
+
+                    <h2 class="card-title">Detalle de la Venta</h2>
+                </div>
 
                 <table id="detalleVentaTable">
                     <thead>
@@ -1018,7 +1036,12 @@ else if (section === "Gastos") {
     cargarClientesCombo();
     cargarArticulosCombo();
     initAgregarArticulo();
+
+    // ✅ Fecha automática (pero editable)
+    const fechaInput = document.getElementById("fechaVenta");
+    fechaInput.value = new Date().toISOString().split("T")[0];
 }
+
 
 
 }
@@ -2693,17 +2716,24 @@ document.addEventListener("click", async e => {
     // ===== DATOS GENERALES (HORA LOCAL DEL DISPOSITIVO) =====
     const folio = `V-${Date.now()}`;
 
-    const now = new Date();
+   // ===== FECHA SELECCIONADA POR EL USUARIO =====
+const fechaInput = document.getElementById("fechaVenta").value;
 
-    const fecha =
-        now.getFullYear() + "-" +
-        String(now.getMonth() + 1).padStart(2, "0") + "-" +
-        String(now.getDate()).padStart(2, "0");
+if (!fechaInput) {
+    alert("Seleccione una fecha");
+    return;
+}
 
-    const hora =
-        String(now.getHours()).padStart(2, "0") + ":" +
-        String(now.getMinutes()).padStart(2, "0") + ":" +
-        String(now.getSeconds()).padStart(2, "0");
+const fecha = fechaInput; // YYYY-MM-DD
+
+// ===== HORA REAL DEL REGISTRO =====
+const now = new Date();
+
+const hora =
+    String(now.getHours()).padStart(2, "0") + ":" +
+    String(now.getMinutes()).padStart(2, "0") + ":" +
+    String(now.getSeconds()).padStart(2, "0");
+
 
     const ventaDetalle = [];
 
