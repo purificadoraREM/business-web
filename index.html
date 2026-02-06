@@ -2764,6 +2764,7 @@ const hora =
         const articuloData = window.articulosJSON.find(a => a.Nombre === articulo);
 
         ventaDetalle.push({
+            IdProducto: articuloData?.Id || "N/A",  // Si no tiene Id, se pone "N/A"
             Folio: folio,
             Fecha: fecha,
             Hora: hora,
