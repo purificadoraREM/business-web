@@ -2866,53 +2866,39 @@ const hora =
     }
 });
 // GASTOS
-    async function cargarGastos() {
+   async function cargarGastos() {
 
     const contenedor = document.getElementById("tablaGastos");
 
-    contenedor.innerHTML = `
-        <div style="padding:20px; text-align:center;">
-            ⏳ Cargando gastos...
-        </div>
-    `;
+    contenedor.innerHTML = "⏳ Cargando gastos...";
 
     const hoy = new Date();
     const yearActual = hoy.getFullYear();
-    const yearAnterior = yearActual - 1;
+    const mesActual = String(hoy.getMonth() + 1).padStart(2, '0');
+
+    const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/Gastos/Gastos_${yearActual}_${mesActual}.json`;
 
     let datos = [];
-    let archivosCargados = 0;
 
-    for (let y of [yearAnterior, yearActual]) {
-        for (let m = 1; m <= 12; m++) {
-
-            const mes = String(m).padStart(2, '0');
-
-            const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/Gastos/Gastos_${y}_${mes}.json`;
-                      
-
-            try {
-                const res = await fetch(url);
-                if (res.ok) {
-                    const dataMes = await res.json();
-                    datos.push(...dataMes);
-                    archivosCargados++;
-                }
-            } catch (error) {
-                console.error("Error:", url);
-            }
+    try {
+        const res = await fetch(url);
+        if (res.ok) {
+            datos = await res.json();
         }
+    } catch (error) {
+        console.error("Error:", url);
     }
 
-    if (archivosCargados === 0) {
-        contenedor.innerHTML = `❌ No se pudieron cargar los gastos`;
+    if (!datos.length) {
+        contenedor.innerHTML = "❌ No hay gastos este mes";
         return;
     }
 
-    gastosData = datos; // 🔥 guardamos global para filtros
+    gastosData = datos;
 
     renderTablaGastos(datos);
 }
+
     // FILTRAR GASTOS
     function filtrarGastos() {
 
