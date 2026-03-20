@@ -2900,12 +2900,13 @@ const hora =
 }
 
     // FILTRAR GASTOS
-    function filtrarGastos() {
+    
+function filtrarGastos() {
 
     const desde = document.getElementById("filtroDesde").value;
     const hasta = document.getElementById("filtroHasta").value;
 
-   let lista = gastosData || [];
+    let lista = gastosData || [];
 
     if (desde) {
         lista = lista.filter(g => g.Fecha >= desde);
@@ -2928,14 +2929,11 @@ const hora =
         return;
     }
 
-    // Ordenar por fecha DESC
     lista.sort((a, b) => b.Fecha.localeCompare(a.Fecha));
 
-    // 🔥 Total gastado
     const total = lista.reduce((acc, g) => acc + Number(g.Monto), 0);
 
     let html = `
-
         <div style="
             background:#ff4d4d;
             color:white;
@@ -2950,20 +2948,26 @@ const hora =
 
         <table style="width:100%;">
             <tr>
+                <th>ID</th>
                 <th>Fecha</th>
                 <th>Concepto</th>
                 <th>Monto</th>
                 <th>Método</th>
+                <th>Cajero</th>
+                <th>Notas</th>
             </tr>
     `;
 
     lista.forEach(g => {
         html += `
             <tr>
-                <td>${g.Fecha}</td>
-                <td>${g.Concepto}</td>
-                <td>$${Number(g.Monto).toFixed(2)}</td>
-                <td>${g.Metodo}</td>
+                <td>${g.ID || ''}</td>
+                <td>${g.Fecha || ''}</td>
+                <td>${g.Concepto || ''}</td>
+                <td>$${Number(g.Monto || 0).toFixed(2)}</td>
+                <td>${g.MetodoDePago || ''}</td>
+                <td>${g.Cajero || ''}</td>
+                <td>${g.Notas || ''}</td>
             </tr>
         `;
     });
