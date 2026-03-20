@@ -644,7 +644,7 @@ th, td {
 let barChart = null;
 let pieChart = null;
 let registrosDetalleFiltrados = [];
-
+let gastosData = [];
 /* ============================================================
     CARGAR SECCIÓN
 ============================================================ */
@@ -866,7 +866,6 @@ else if (section === "Gastos") {
 
                 <div class="grid-2-premium">
 
-                    <!-- Concepto -->
                     <div class="form-group">
                         <label>Concepto</label>
                         <div class="input-icon">
@@ -875,7 +874,6 @@ else if (section === "Gastos") {
                         </div>
                     </div>
 
-                    <!-- Monto -->
                     <div class="form-group">
                         <label>Monto</label>
                         <div class="input-icon">
@@ -884,7 +882,6 @@ else if (section === "Gastos") {
                         </div>
                     </div>
 
-                    <!-- Método de Pago -->
                     <div class="form-group">
                         <label>Método de Pago</label>
                         <div class="input-icon">
@@ -897,7 +894,6 @@ else if (section === "Gastos") {
                         </div>
                     </div>
 
-                    <!-- Fecha -->
                     <div class="form-group">
                         <label>Fecha</label>
                         <div class="input-icon">
@@ -906,7 +902,6 @@ else if (section === "Gastos") {
                         </div>
                     </div>
 
-                    <!-- Notas -->
                     <div class="form-group full">
                         <label>Notas</label>
                         <div class="input-icon textarea-icon">
@@ -915,12 +910,11 @@ else if (section === "Gastos") {
                         </div>
                     </div>
 
-                    <!-- Clave de seguridad -->
                     <div class="form-group full">
                         <label>Contraseña</label>
                         <div class="input-icon">
                             <span class="icon">🔑</span>
-                            <input type="password" id="apiKeyInput" class="input" placeholder="Ingresa tu Contraseña">
+                            <input type="password" id="apiKeyInput" class="input">
                         </div>
                     </div>
 
@@ -931,24 +925,32 @@ else if (section === "Gastos") {
 
             <div class="card">
                 <h2 class="card-title">📄 Historial de Gastos</h2>
+
                 <div class="grid-2-premium">
-    <div class="form-group">
-        <label>Desde</label>
-        <input type="date" id="filtroDesde" class="input">
-    </div>
+                    <div class="form-group">
+                        <label>Desde</label>
+                        <input type="date" id="filtroDesde" class="input">
+                    </div>
 
-    <div class="form-group">
-        <label>Hasta</label>
-        <input type="date" id="filtroHasta" class="input">
-    </div>
-</div>
+                    <div class="form-group">
+                        <label>Hasta</label>
+                        <input type="date" id="filtroHasta" class="input">
+                    </div>
+                </div>
 
-<button class="btn-premium" onclick="filtrarGastos()">Filtrar</button>
+                <button class="btn-premium" onclick="filtrarGastos()">Filtrar</button>
+
                 <div id="tablaGastos" class="table-container"></div>
             </div>
 
         </div>
     `;
+
+    // 🔥 CARGAR AUTOMÁTICAMENTE
+    setTimeout(() => {
+        cargarGastos();
+    }, 100);
+
  }else if (section === "Registrarventa") {
     view.innerHTML = `
         <div class="gastos-portal gastos-premium">
@@ -2863,7 +2865,127 @@ const hora =
         alert("❌ Error al registrar venta");
     }
 });
+// GASTOS
+    async function cargarGastos() {
 
+    const contenedor = document.getElementById("tablaGastos");
+
+    contenedor.innerHTML = `
+        <div style="padding:20px; text-align:center;">
+            ⏳ Cargando gastos...
+        </div>
+    `;
+
+    const hoy = new Date();
+    const yearActual = hoy.getFullYear();
+    const yearAnterior = yearActual - 1;
+
+    let datos = [];
+    let archivosCargados = 0;
+
+    for (let y of [yearAnterior, yearActual]) {
+        for (let m = 1; m <= 12; m++) {
+
+            const mes = String(m).padStart(2, '0');
+
+            const url = `https://raw.githubusercontent.com/purificadoraREM/mi_negocio_data/main/data/Gastos/Gastos_${y}_${mes}.json`;
+                      
+
+            try {
+                const res = await fetch(url);
+                if (res.ok) {
+                    const dataMes = await res.json();
+                    datos.push(...dataMes);
+                    archivosCargados++;
+                }
+            } catch (error) {
+                console.error("Error:", url);
+            }
+        }
+    }
+
+    if (archivosCargados === 0) {
+        contenedor.innerHTML = `❌ No se pudieron cargar los gastos`;
+        return;
+    }
+
+    gastosData = datos; // 🔥 guardamos global para filtros
+
+    renderTablaGastos(datos);
+}
+    // FILTRAR GASTOS
+    function filtrarGastos() {
+
+    const desde = document.getElementById("filtroDesde").value;
+    const hasta = document.getElementById("filtroHasta").value;
+
+   let lista = gastosData || [];
+
+    if (desde) {
+        lista = lista.filter(g => g.Fecha >= desde);
+    }
+
+    if (hasta) {
+        lista = lista.filter(g => g.Fecha <= hasta);
+    }
+
+    renderTablaGastos(lista);
+}
+    // RENDER DE TABLA
+
+    function renderTablaGastos(lista) {
+
+    const contenedor = document.getElementById("tablaGastos");
+
+    if (!lista.length) {
+        contenedor.innerHTML = `<p>No hay gastos en este rango</p>`;
+        return;
+    }
+
+    // Ordenar por fecha DESC
+    lista.sort((a, b) => b.Fecha.localeCompare(a.Fecha));
+
+    // 🔥 Total gastado
+    const total = lista.reduce((acc, g) => acc + Number(g.Monto), 0);
+
+    let html = `
+
+        <div style="
+            background:#ff4d4d;
+            color:white;
+            padding:12px;
+            border-radius:10px;
+            font-size:18px;
+            font-weight:bold;
+            margin-bottom:15px;
+        ">
+            Total Gastado: $${total.toFixed(2)}
+        </div>
+
+        <table style="width:100%;">
+            <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Monto</th>
+                <th>Método</th>
+            </tr>
+    `;
+
+    lista.forEach(g => {
+        html += `
+            <tr>
+                <td>${g.Fecha}</td>
+                <td>${g.Concepto}</td>
+                <td>$${Number(g.Monto).toFixed(2)}</td>
+                <td>${g.Metodo}</td>
+            </tr>
+        `;
+    });
+
+    html += "</table>";
+
+    contenedor.innerHTML = html;
+}
 
 
 </script>    
