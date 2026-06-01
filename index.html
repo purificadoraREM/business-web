@@ -1615,14 +1615,14 @@ let reporte = {};
     let key;
 
     // SOLO estos productos se agrupan sin importar el precio
-   /* if (articulo === "agua suelta" || articulo === "hielo") {
-        key = articulo;*/
+    if (articulo === "agua suelta" || articulo === "hielo") {
+        key = articulo;
 
-            if (original === "agua" || original === "agua suelta") {
+          /*  if (original === "agua" || original === "agua suelta") {
     key = "agua";
 }
 else if (original === "hielo") {
-    key = "hielo";
+    key = "hielo";*/
 }
     } else {
         key = v.Articulo + "_" + v.PrecioUnitario + "_" + v.Iva;
