@@ -1586,8 +1586,40 @@ XLSX.utils.sheet_add_json(
 
 let reporte = {};  
 
-detalles.forEach(v => {
+/* detalles.forEach(v => {
     const key = v.Articulo + "_" + v.PrecioUnitario + "_" + v.Iva;
+
+    if (!reporte[key]) {
+        reporte[key] = {
+            Articulo: v.Articulo,
+            CantidadVendida: 0,
+            PrecioUnitario: Number(v.PrecioUnitario),
+            Iva: 0,
+            TotalVendido: 0
+        };
+    }
+
+    // Sumar cantidad vendida
+    reporte[key].CantidadVendida += Number(v.Cantidad);
+
+    // Sumar IVA directo del JSON
+    reporte[key].Iva += Number(v.Iva);
+
+    // Sumar Total directo del JSON
+    reporte[key].TotalVendido += Number(v.Total);
+});*/
+        detalles.forEach(v => {
+
+    const articulo = (v.Articulo || "").trim().toLowerCase();
+
+    let key;
+
+    // SOLO estos productos se agrupan sin importar el precio
+    if (articulo === "agua suelta" || articulo === "hielo") {
+        key = articulo;
+    } else {
+        key = v.Articulo + "_" + v.PrecioUnitario + "_" + v.Iva;
+    }
 
     if (!reporte[key]) {
         reporte[key] = {
