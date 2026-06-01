@@ -2537,8 +2537,61 @@ async function guardarModificacion() {
         alert("No se pudo conectar con el servidor al actualizar las horas.");
     }
 }
-
 async function borrarRegistro(id) {
+    if (!confirm("¿Seguro que deseas borrar este registro?")) return;
+
+    const apiKey = prompt("Ingresa tu clave de seguridad:");
+    if (!apiKey) {
+        alert("Clave requerida");
+        return;
+    }
+
+    // 🔥 FIX: soporta id o ID
+    const registro = window.registros.find(r => Number(r.id || r.ID) === Number(id));
+
+    if (!registro) {
+        alert("Registro no encontrado");
+        return;
+    }
+
+    const payload = {
+        Tabla: "RegEmpleados",
+        id: Number(id),   // 🔥 IMPORTANTE: minúscula para el Worker
+        Nombre: registro.empleado,
+        Fecha: registro.fecha,
+        HoraEntrada: registro.entrada || "00:00",
+        HoraSalida: registro.salida || "00:00",
+        Movimiento: "DELETE"
+    };
+
+    console.log("Payload DELETE:", payload);
+
+    try {
+        const response = await fetch("https://rem.d5hx88s66m.workers.dev", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-api-key": apiKey
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        console.log("RESPUESTA DELETE:", result);
+
+        if (response.ok) {
+            alert("Registro eliminado correctamente");
+            cargarRegistros(); // refrescar tabla
+        } else {
+            alert("Error al borrar: " + (result.error || JSON.stringify(result)));
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("No se pudo conectar con el servidor al borrar el registro.");
+    }
+}
+/*async function borrarRegistro(id) {
     if (!confirm("¿Seguro que deseas borrar este registro?")) return;
 
     const apiKey = prompt("Ingresa tu clave de seguridad:");
@@ -2590,7 +2643,7 @@ async function borrarRegistro(id) {
         console.error(err);
         alert("No se pudo conectar con el servidor al borrar el registro.");
     }
-}
+}*/
 
     /* ============================================================ 
    CARGAR CLIENTES EN COMBOBOX  registrar venta
