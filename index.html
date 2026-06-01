@@ -651,7 +651,7 @@ let gastosData = [];
 function loadSection(section) {
     const view = document.getElementById("view");
 
-   /* if(section === "Dashboard") {
+    if(section === "Dashboard") {
         view.innerHTML = `
             <h1 class="title">Registro de Ventas</h1>
             <div class="card">
@@ -678,7 +678,7 @@ function loadSection(section) {
             </div>
         `;
     
-}else */if(section === "Empleados") {
+}else if(section === "Empleados") {
     view.innerHTML = `
         <h1 class="title">Empleados</h1>
 
@@ -731,12 +731,7 @@ function loadSection(section) {
             <div id="resultadoPago"></div>
         </div>
     `;
-}
-
-
-
-
-else if(section === "Productos") {
+} else if(section === "Productos") {
     view.innerHTML = `
         <h1 class="title">Productos</h1>
 
@@ -825,9 +820,7 @@ else if(section === "Clientes") {
     `;
 
     cargarClientes();
-}
-
-    else if(section === "Inventario") {
+}  else if(section === "Inventario") {
     view.innerHTML = `
         <h1 class="title">Inventario</h1>
 
@@ -1615,16 +1608,16 @@ let reporte = {};
     let key;
 
     // SOLO estos productos se agrupan sin importar el precio
-    if (articulo === "agua suelta" || articulo === "hielo") {
-        key = articulo;
+   /* if (articulo === "agua suelta" || articulo === "hielo") {
+        key = articulo;*/
 
-          /*  if (original === "agua" || original === "agua suelta") {
+           if (articulo === "agua" || articulo === "agua suelta") {
     key = "agua";
 }
-else if (original === "hielo") {
-    key = "hielo";*/
+else if (articulo === "hielo") {
+    key = "hielo";
 }
-    } else {
+     else {
         key = v.Articulo + "_" + v.PrecioUnitario + "_" + v.Iva;
     }
 
