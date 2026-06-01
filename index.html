@@ -1497,7 +1497,87 @@ function exportarAsistencias() {
     /* ============================================
         HOJA 1: REGISTRO DE VENTAS (sin modificar)
     =============================================*/
-    const hoja1 = XLSX.utils.json_to_sheet(detalles);
+    const hoja1 = XLSX.utils.json_to_sheet(detalles);   
+     
+
+/* ============================================
+    RESUMEN POR MÉTODO DE PAGO
+============================================ */
+
+const resumenPagos = {
+    Efectivo: 0,
+    Transferencia: 0,
+    Tarjeta: 0,
+    Mixto: 0
+};
+
+detalles.forEach(v => {
+    const total = Number(v.Total) || 0;
+    const tipo = (v.TipoDePago || "").trim();
+
+    if (tipo === "Efectivo") {
+        resumenPagos.Efectivo += total;
+    }
+    else if (tipo === "Transferencia") {
+        resumenPagos.Transferencia += total;
+    }
+    else if (tipo === "Tarjeta") {
+        resumenPagos.Tarjeta += total;
+    }
+    else {
+        resumenPagos.Mixto += total;
+    }
+});
+
+const resumenArr = [
+    {
+        TipoDePago: "Efectivo",
+        TotalVendido: resumenPagos.Efectivo
+    },
+    {
+        TipoDePago: "Transferencia",
+        TotalVendido: resumenPagos.Transferencia
+    },
+    {
+        TipoDePago: "Tarjeta",
+        TotalVendido: resumenPagos.Tarjeta
+    },
+    {
+        TipoDePago: "Mixto",
+        TotalVendido: resumenPagos.Mixto
+    },
+    {
+        TipoDePago: "TOTAL GENERAL",
+        TotalVendido:
+            resumenPagos.Efectivo +
+            resumenPagos.Transferencia +
+            resumenPagos.Tarjeta +
+            resumenPagos.Mixto
+    }
+];
+
+// Obtener última fila usada
+const rango = XLSX.utils.decode_range(hoja1["!ref"]);
+
+// Dejar 3 filas vacías antes del resumen
+const filaInicio = rango.e.r + 4;
+
+// Título
+XLSX.utils.sheet_add_aoa(
+    hoja1,
+    [["RESUMEN POR MÉTODO DE PAGO"]],
+    { origin: `A${filaInicio}` }
+);
+
+// Tabla resumen
+XLSX.utils.sheet_add_json(
+    hoja1,
+    resumenArr,
+    {
+        origin: `A${filaInicio + 1}`,
+        skipHeader: false
+    }
+);
 
     /* ============================================
         HOJA 2: REPORTE SAT
@@ -1549,7 +1629,7 @@ const hoja2 = XLSX.utils.json_to_sheet(reporteArr);
         
     /* ============================================
         CREAR ARCHIVO
-    =============================================*/
+    =============================================*/  
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, hoja1, "Registro de Ventas");
     XLSX.utils.book_append_sheet(wb, hoja2, "Reporte SAT");
@@ -1558,6 +1638,9 @@ const hoja2 = XLSX.utils.json_to_sheet(reporteArr);
 }
 
 
+
+
+    
  /* ============================================================
   productos y relacionados
 ============================================================ */
